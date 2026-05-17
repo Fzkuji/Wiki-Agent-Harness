@@ -163,6 +163,7 @@ def wiki_agent(
     result = runtime.exec(
         content=[{"type": "text", "text": prompt}],
         max_iterations=30,
+        toolset="default",  # ingest/query/refactor read & write vault files
     )
     return {
         "action": action,
