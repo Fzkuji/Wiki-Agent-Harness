@@ -5,7 +5,6 @@ Wiki Agent — main entry point.
 Usage:
     python3 -m wiki_agent_harness "Organise my notes into a wiki"
     python3 wiki_agent_harness/main.py "Ingest today's session into the wiki"
-    python3 wiki_agent_harness/main.py --vault ~/my-vault "Build a wiki from scratch"
 """
 
 from __future__ import annotations
@@ -18,6 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from openprogram import agentic_function
 from openprogram.agentic_programming.runtime import Runtime
+from openprogram.programs.functions.buildin.build_catalog import build_catalog
+from openprogram.programs.functions.buildin.parse_action import parse_action
 
 
 WIKI_SYSTEM_PROMPT = """\
@@ -35,6 +36,68 @@ Core principles:
 Available tools: read, write, edit files inside the vault directory.
 """
 
+ACTIONS = {
+    "ingest": {
+        "function": None,  # handled inline
+        "description": "Convert raw materials (text, notes, URLs, conversations) into structured wiki pages. Identifies entities/concepts, writes or updates pages, maintains [[wikilinks]], updates index.md + log.md.",
+        "input": {
+            "task": {"source": "llm", "description": "What to ingest and how"},
+        },
+    },
+    "browse": {
+        "function": None,
+        "description": "Show the current vault structure — folder tree and page list by type. Use this to understand what already exists before ingest or refactor.",
+        "input": {},
+    },
+    "lint": {
+        "function": None,
+        "description": "Run a health check on the vault: missing type fields, broken [[wikilinks]], orphaned pages, frontmatter issues.",
+        "input": {},
+    },
+    "query": {
+        "function": None,
+        "description": "Answer a question by reading relevant wiki pages. Optionally save the answer as a new query or synthesis page for future reuse.",
+        "input": {
+            "task": {"source": "llm", "description": "The question to answer"},
+        },
+    },
+    "refactor": {
+        "function": None,
+        "description": "Reorganise the vault: rename pages, fix broken links, merge duplicates, split overgrown pages, prune stubs.",
+        "input": {
+            "task": {"source": "llm", "description": "What to reorganise"},
+        },
+    },
+}
+
+
+@agentic_function(render_range={"depth": 0, "siblings": 0})
+def _pick_action(task: str, vault_state: str, runtime: Runtime) -> dict:
+    """Route a wiki request to one of: ingest, browse, lint, query, refactor."""
+    catalog = build_catalog(ACTIONS)
+    reply = runtime.exec(content=[{"type": "text", "text": (
+        f"User request:\n{task}\n\n"
+        f"Current vault state:\n{vault_state}\n\n"
+        f"== Actions ==\n{catalog}\n\n"
+        "Pick the one action whose description best matches what the user "
+        "needs:\n"
+        "- a question about existing content → query\n"
+        "- adding or importing new material → ingest\n"
+        "- an overview or list of what exists → browse\n"
+        "- checking the vault for problems → lint\n"
+        "- reorganising, renaming, or merging pages → refactor\n\n"
+        "Reply with this exact JSON and nothing else:\n"
+        '{"call": "<action>", "args": {"task": "..."}}'
+    )}])
+    action = parse_action(reply)
+    if action is None:
+        return {"action": "ingest", "task": task}
+    call = action.get("call", "ingest")
+    if call not in ACTIONS:
+        call = "ingest"
+    args = action.get("args") or {}
+    return {"action": call, "task": args.get("task", task)}
+
 
 @agentic_function(
     render_range={"siblings": -1},
@@ -46,151 +109,84 @@ Available tools: read, write, edit files inside the vault directory.
             "placeholder": "e.g. Ingest my notes about LLMs into a structured wiki",
             "multiline": True,
         },
-        "vault": {
-            "description": "Path to the wiki vault directory",
-            "placeholder": "e.g. ~/my-vault  (leave blank for default)",
-        },
-        "action": {
-            "description": "Operation to perform",
-            "options": ["ingest", "browse", "lint", "query", "refactor"],
-        },
         "runtime": {"hidden": True},
     },
 )
 def wiki_agent(
     task: str,
-    vault: str = "",
-    action: str = "ingest",
     runtime: Runtime | None = None,
 ) -> dict:
     """Autonomous wiki-building agent. Organise knowledge into an Obsidian-compatible wiki.
 
-    Supports five operations:
-
-    **ingest** — Convert raw materials (text, notes, URLs) into structured wiki pages.
-    Analyses content, identifies entities / concepts, writes or updates pages,
-    maintains [[wikilinks]], and updates index.md + log.md.
-
-    **browse** — Show the current vault structure (folder tree + page list by type).
-
-    **lint** — Health check: missing type fields, broken wikilinks, orphaned pages.
-
-    **query** — Answer a question from the wiki, and optionally save the answer as
-    a new `query` or `synthesis` page for future reuse.
-
-    **refactor** — Reorganise overgrown sections: rename pages, merge duplicates,
-    split large pages, prune broken links.
-
-    Args:
-        task: Natural-language description of what to do.
-        vault: Path to the vault root directory. Defaults to WAH_VAULT env or
-               ~/.agentic/memory/wiki.
-        action: One of ingest / browse / lint / query / refactor.
-        runtime: LLM runtime instance (injected by the harness).
-
-    Returns:
-        dict with keys: action, vault, summary, pages_touched.
+    Accepts any natural-language request about a wiki vault: ingest new material,
+    browse existing content, run a health check, answer a question, or reorganise pages.
+    The agent routes the request to one operation, then returns a dict with keys
+    action, vault, result. The vault directory is taken from the "Working in a
+    folder" setting (runtime workdir), or defaults to WAH_VAULT env /
+    ~/.agentic/memory/wiki.
     """
+    if runtime is None:
+        return {"error": "wiki_agent requires a runtime."}
+
     from wiki_agent_harness import Wiki
 
-    root = vault.strip() or None
+    # Use runtime workdir if set (from Web UI "Working in a folder"), else default vault
+    root = None
+    wd = getattr(runtime, "workdir", None)
+    if wd:
+        root = str(wd)
     w = Wiki(root=root, runtime=runtime)
 
+    # Let LLM pick the action
+    vault_state = f"{w.tree()}\n\nLint:\n{w.lint()}"
+    decision = _pick_action(task=task, vault_state=vault_state, runtime=runtime)
+    action = decision.get("action", "ingest")
+    sub_task = decision.get("task", task)
+
+    # Execute
     if action == "browse":
-        tree = w.tree()
-        lint = w.lint()
-        return {
-            "action": "browse",
-            "vault": str(w.root),
-            "tree": tree,
-            "lint_summary": lint.splitlines()[0] if lint else "",
-        }
+        return {"action": "browse", "vault": str(w.root), "result": w.tree()}
 
     if action == "lint":
-        report = w.lint()
-        return {
-            "action": "lint",
-            "vault": str(w.root),
-            "report": report,
-        }
+        return {"action": "lint", "vault": str(w.root), "result": w.lint()}
 
-    if action == "refactor":
-        result = []
-        for name, info in _find_refactor_candidates(w):
-            result.append(f"- {name}: {info}")
-        return {
-            "action": "refactor",
-            "vault": str(w.root),
-            "candidates": "\n".join(result) if result else "No obvious candidates found.",
-            "note": "Use memory_rename / memory_relink / memory_delete tools to apply changes.",
-        }
-
-    # ingest / query — hand off to the agentic ingest pipeline via runtime
-    if runtime is None:
-        return {
-            "action": action,
-            "vault": str(w.root),
-            "error": "A runtime is required for ingest and query operations.",
-        }
-
-    # Build a prompt that describes the vault state + the user's task
-    tree = w.tree()
-    lint_lines = w.lint().splitlines()[:5]
-    context = f"Vault: {w.root}\n\n{tree}\n\nLint (first 5 lines):\n" + "\n".join(lint_lines)
-
+    # ingest / query / refactor — agentic file operations via runtime
+    action_desc = ACTIONS.get(action, {}).get("description", "")
     prompt = (
-        f"Action: {action}\n\n"
-        f"Task: {task}\n\n"
-        f"Current vault state:\n{context}\n\n"
-        "Use the file tools to read existing pages and write / edit pages as needed. "
-        "All paths are relative to the vault root unless absolute. "
+        f"Action: {action}\n{action_desc}\n\n"
+        f"Task: {sub_task}\n\n"
+        f"Vault: {w.root}\n\n"
+        f"Current state:\n{vault_state}\n\n"
+        "Use the file tools to read existing pages and write/edit pages as needed. "
         "Update index.md (table of contents) and append one entry to log.md when done."
     )
-
-    result = runtime.exec(prompt, max_iterations=30)
-    pages = w.lint()  # re-lint to count after changes
-
+    result = runtime.exec(
+        content=[{"type": "text", "text": prompt}],
+        max_iterations=30,
+    )
     return {
         "action": action,
         "vault": str(w.root),
-        "summary": result if isinstance(result, str) else str(result),
-        "lint_after": pages.splitlines()[0] if pages else "",
+        "result": result if isinstance(result, str) else str(result),
     }
-
-
-def _find_refactor_candidates(w) -> list[tuple[str, str]]:
-    """Return pages that may need refactoring (stubs, no type, etc.)."""
-    from wiki_agent_harness import store
-    candidates = []
-    for p in w.iter_pages():
-        try:
-            text = p.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        if len(text.strip()) < 100:
-            candidates.append((p.stem, "stub — very short page"))
-        elif "type:" not in text[:300]:
-            candidates.append((p.stem, "missing type: frontmatter"))
-    return candidates[:20]
 
 
 # ── CLI entry point ──────────────────────────────────────────────────────────
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Wiki Agent — build and maintain a knowledge wiki")
-    parser.add_argument("task", nargs="?", default="browse", help="Task description")
-    parser.add_argument("--vault", default="", help="Vault directory path")
-    parser.add_argument("--action", default="ingest",
-                        choices=["ingest", "browse", "lint", "query", "refactor"])
+    parser.add_argument("task", nargs="?", default="Browse the wiki", help="Task description")
     args = parser.parse_args()
 
     try:
-        from openprogram.legacy_providers import create_runtime
+        from openprogram import create_runtime
         rt = create_runtime()
-    except Exception:
+    except Exception as e:
+        print(f"warning: could not create runtime ({e}); agentic actions will fail",
+              file=sys.stderr)
         rt = None
 
-    result = wiki_agent(task=args.task, vault=args.vault, action=args.action, runtime=rt)
+    result = wiki_agent(task=args.task, runtime=rt)
     import json
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

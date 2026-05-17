@@ -68,6 +68,10 @@ w.ingest_session(session_id, messages, runtime=my_runtime)
 
 Agentic operations (`ingest_session`) require a runtime callable. Create `wiki_agent_harness/_runtime.py` in your project and expose `build_autodetect()` — the package will pick it up automatically. If absent, agentic ops raise a clear error asking you to supply a runtime.
 
+## Built on OpenProgram
+
+Part of [**OpenProgram**](https://github.com/Fzkuji/OpenProgram) — the Agentic Programming framework.
+
 ## Acknowledgements
 
 - **Andrej Karpathy** — [llm-wiki.md](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): originated the three-layer architecture (Raw Sources → Wiki → Schema), the persistent-accumulation model, and the Ingest / Query / Lint operation modes. The `index.md` + `log.md` dual-navigation pattern also comes from this design.
