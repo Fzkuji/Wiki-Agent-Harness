@@ -17,8 +17,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from openprogram import agentic_function
 from openprogram.agentic_programming.runtime import Runtime
-from openprogram.programs.functions.buildin.build_catalog import build_catalog
-from openprogram.programs.functions.buildin.parse_action import parse_action
+# render_options / extract_action moved into the decision module when
+# buildin/ was slimmed down (build_catalog was the pre-rename options
+# renderer; parse_action the pre-rename action extractor).
+from openprogram.agentic_programming.decision import (
+    render_options as build_catalog,
+    extract_action as parse_action,
+)
 
 
 WIKI_SYSTEM_PROMPT = """\
@@ -100,6 +105,8 @@ def _pick_action(task: str, vault_state: str, runtime: Runtime) -> dict:
 
 
 @agentic_function(
+    as_tool=True,
+    toolset=("harness",),
     render_range={"siblings": -1},
     system=WIKI_SYSTEM_PROMPT,
     input={
