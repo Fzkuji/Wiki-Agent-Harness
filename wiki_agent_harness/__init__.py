@@ -232,6 +232,52 @@ class Wiki:
             purpose=self.purpose,
         )
 
+    def enrich_page(
+        self, target: str | Path, *, runtime: Any | None = None,
+    ) -> dict[str, Any]:
+        """Have the agent rewrite a page's slots using rich components."""
+        path = self._resolve(target)
+        return _ingest.enrich_page(
+            path,
+            vault_root=self.root,
+            renderer=self.renderer,
+            prompts=self.prompts,
+            runtime=runtime or self.runtime,
+        )
+
+    def enrich_all(
+        self,
+        *,
+        runtime: Any | None = None,
+        only_templates: list[str] | None = None,
+        max_pages: int | None = None,
+    ) -> dict[str, Any]:
+        """Enrich every harness-managed page (or only a template subset)."""
+        rt = runtime or self.runtime
+        results: list[dict[str, Any]] = []
+        for p in self.iter_pages():
+            if max_pages is not None and len(results) >= max_pages:
+                break
+            meta = _slots.read_meta_file(p)
+            tmpl = str(meta.get("template") or "")
+            if only_templates and tmpl not in only_templates:
+                continue
+            results.append(self.enrich_page(p, runtime=rt))
+        # Folder READMEs (template="folder") use rebuild_folder_index, not
+        # enrich_page; iterate them separately.
+        if not only_templates or "folder" in only_templates:
+            from . import store as _store
+            for readme in _store.iter_folder_indexes(self.root):
+                if max_pages is not None and len(results) >= max_pages:
+                    break
+                results.append(self.enrich_page(readme, runtime=rt))
+        return {
+            "ok": True,
+            "n_pages": len(results),
+            "n_ok": sum(1 for r in results if r.get("ok") and not r.get("skipped")),
+            "results": results,
+        }
+
     # ── Internal ───────────────────────────────────────────────────────
     def _resolve(self, target: str | Path) -> Path:
         if isinstance(target, Path):

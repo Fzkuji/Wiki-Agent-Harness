@@ -121,6 +121,7 @@ def ingest_session(
         return {"ok": False, "error": "analysis returned empty"}
 
     # ── Step 2: generation ─────────────────────────────────────────────
+    from .components import render_component_palette
     gen_prompt = prompts.generation.format(
         vault_root=str(vault_root),
         source_slug=slug,
@@ -128,6 +129,7 @@ def ingest_session(
         analysis=analysis,
         source=source,
         template_details=template_details,
+        component_palette=render_component_palette(),
     )
     try:
         report = runtime.exec(
@@ -173,6 +175,69 @@ def ingest_session(
         "n_review_items": len(review_items),
         "commit": commit_info,
     }
+
+
+# ---------------------------------------------------------------------------
+# Page-level enrichment (rewrite slots to use rich components)
+# ---------------------------------------------------------------------------
+
+
+def enrich_page(
+    page_path: Path,
+    *,
+    vault_root: Path,
+    renderer: Renderer,
+    prompts: PromptSet,
+    runtime: Any,
+) -> dict[str, Any]:
+    """Ask the runtime to rewrite a page's slots using the rich component
+    palette. The agent edits the file in place via its standard file tools.
+    """
+    if runtime is None:
+        return {"ok": False, "error": "no runtime supplied"}
+    if not page_path.exists():
+        return {"ok": False, "error": f"page not found: {page_path}"}
+
+    from . import slots as _slots
+    from .components import render_component_palette
+
+    html = page_path.read_text(encoding="utf-8")
+    meta = _slots.read_meta(html)
+    template = str(meta.get("title") or "") and str(meta.get("template") or "")
+    slot_ids = _slots.list_slots(html)
+    if not slot_ids:
+        return {"ok": True, "skipped": True, "reason": "no slots"}
+
+    slots_dump_parts: list[str] = []
+    for sid in slot_ids:
+        content = _slots.read_slot(html, sid) or ""
+        slots_dump_parts.append(
+            f"### slot: `{sid}`\n```html\n{content.strip()}\n```\n"
+        )
+    slots_dump = "\n".join(slots_dump_parts)
+
+    prompt = prompts.enrichment.format(
+        page_path=str(page_path),
+        template=template,
+        slots_dump=slots_dump,
+        component_palette=render_component_palette(),
+    )
+    try:
+        report = runtime.exec(
+            content=[{"type": "text", "text": prompt}],
+            max_iterations=20,
+        )
+    except Exception as e:
+        return {"ok": False, "error": f"runtime: {e}"}
+
+    db = store.index_db_path(store.state_dir(vault_root))
+    try:
+        _idx.update_page(page_path, vault_root, db)
+    except Exception as e:
+        logger.warning("index update after enrich failed: %s", e)
+
+    return {"ok": True, "page": str(page_path.relative_to(vault_root)),
+            "report": report}
 
 
 # ---------------------------------------------------------------------------

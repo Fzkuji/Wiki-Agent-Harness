@@ -21,16 +21,12 @@ For each piece of durable knowledge in the source, list:
   - the best matching template (one of: {templates})
   - whether a related page already exists in the wiki (check the index)
   - which folder it should live in (use existing folders when sensible)
+  - VISUAL HINTS — note structures in the source that should become rich
+    components (numerics → stat-grid; processes → mermaid; chronology →
+    timeline; comparisons → chart/table; key facts → callout).
 
 Then add a final ``Folder housekeeping`` section listing concrete tidy
-actions the writer should perform after the content updates:
-
-  - folders whose ``README.html`` ``description`` slot is empty and should
-    be filled
-  - folders that now contain too many siblings and should be split into
-    subtopic folders
-  - pages that should be renamed, moved, merged, or deleted given the new
-    material
+actions the writer should perform after the content updates.
 
 Be concise. Skip ephemeral chatter. Output plain text, not JSON.
 
@@ -72,109 +68,63 @@ Today:             {today}
 
 ## Two responsibilities, equal weight
 
-Maintaining this vault means two things, and you must do both:
-
-  (A) Write content — create / update pages from the analysis.
+  (A) Write rich content — create / update pages, using the visual
+      component palette (see below) to turn information into something
+      visual instead of walls of text.
   (B) Tend the folder structure — keep folder READMEs informative, split
-      folders before they get unwieldy, rename / move / delete pages so
-      future readers can navigate by folder alone.
+      folders before they overflow, rename / move / delete pages.
 
-(B) is not a "do it at the end" step. Interleave it: after every 2-3 page
-edits, pause and do a brief tidy pass on whatever folders you just touched.
-Waiting until a folder has 10+ files before reorganising is too late.
+Interleave both: after every 2-3 page edits, pause and tidy folders.
 
-## How pages work
+## Page anatomy
 
-Every page is an ``.html`` file. The shell (head, navbar, layout, footer)
-is rendered from a template; you never write that part. You only write the
-agent-editable regions:
+Every page is an ``.html`` file. Shell (head, navbar, footer) is rendered
+from a template — you never write it. You only edit:
 
-  - One ``<!-- wah:meta ... -->`` YAML block at the top of <body>
-    (template name, title, tags, related links, updated date).
+  - One ``<!-- wah:meta ... -->`` YAML block at top of <body>.
   - Named slots: ``<!-- wah:slot id="X" -->...<!-- /wah:slot -->``.
-    Each slot is one logical chunk (summary, body, examples, etc.) and
-    you can edit one slot at a time without touching the rest of the page.
 
-Use the harness primitives instead of hand-writing HTML:
+Use the harness primitives:
 
-  - ``new_page(folder, name, template, meta)`` — render a fresh page from
-    a template (empty slots, meta block prefilled). The only way to
-    create pages; don't hand-write HTML.
-  - ``write_slot(page, slot_id, html)`` — overwrite one slot. ``html``
-    may contain Bootstrap-styled HTML; keep it simple.
+  - ``new_page(folder, name, template, meta)`` — render a fresh page.
+  - ``write_slot(page, slot_id, html)`` — overwrite a slot.
   - ``append_slot(page, slot_id, html)`` — append to a slot.
-  - ``set_meta(page, updates)`` — merge into the meta block.
-  - ``rebuild_folder_index(folder)`` — re-render a folder's
-    ``README.html`` (auto-runs after ``new_page``; call manually after
-    any reorganisation done with shell tools).
+  - ``set_meta(page, updates)`` — merge into meta.
+  - ``rebuild_folder_index(folder)`` — re-render a folder's README.html.
 
-Everything else is a standard file operation; just use ordinary
-``read`` / ``write`` / ``edit`` / ``bash`` tools:
-
-  - To **rename** a page: ``mv old.html new.html``. Then grep the vault
-    for any ``href="...old.html..."`` and edit each match. Then call
-    ``rebuild_folder_index`` on both the old and new parent folders.
-  - To **delete** a page: ``rm page.html``. Then grep for hrefs pointing
-    at it; remove the ``<a>`` wrapper (keep the inner text). Call
-    ``rebuild_folder_index`` on the parent.
-  - To **merge** two pages into one: read both, combine into target via
-    ``write_slot`` / ``append_slot``, then delete the source with the
-    flow above.
-
-The harness deliberately does NOT wrap rm/mv/grep in custom primitives.
-Use the tools you already have.
-
-The folder-level ``README.html`` itself is a regular page using the
-``folder`` template. Its child-list is auto-generated. Its
-``description`` slot is for you to write — a short paragraph explaining
-what lives in this folder and why. Other slots (e.g. ``description``)
-survive across rebuilds.
+For renames / deletes / merges use ordinary ``mv`` / ``rm`` / grep+edit,
+then call ``rebuild_folder_index`` on affected folders.
 
 ## Available templates
 
 {template_details}
 
+## Visual component palette — USE THESE
+
+{component_palette}
+
 ## Workflow
 
-For each cluster of related items in the analysis below, repeat:
+For each cluster of related items in the analysis:
 
-  1. WRITE 2-3 PAGES.
-     - Pick the template that fits best (use ``note`` as a catch-all).
-     - Place in an existing folder when possible; create a new subfolder
-       only when the topic genuinely warrants its own area.
-     - If a relevant page already exists, READ it, then edit specific
-       slots to merge new content. Do not rewrite slots that are already
-       correct.
-     - When adding a relation to another page, use a standard ``<a href>``
-       pointing at the other page's relative path; also append it to the
-       page's meta ``related`` list.
+  1. WRITE 2-3 PAGES — pick template, place in folder, fill slots.
+     **Slots are HTML; default to the visual components above, not
+     paragraphs.** A page that's only <p>/<ul> is a failure case.
+     Stack components: stat-grid → mermaid → card-grid → callout, etc.
 
   2. TIDY THE FOLDERS YOU JUST TOUCHED.
-     - For each folder you wrote into, read its ``README.html``. If its
-       ``description`` slot is empty, write one short paragraph
-       describing what this folder is for. If the existing description
-       is out of date given the new pages, revise it.
-     - Count the direct content pages in that folder. If it now has more
-       than ~7, propose a split: create 2-4 subfolder names that
-       partition the pages naturally and ``mv`` each page into its
-       sub-area (fix hrefs, then ``rebuild_folder_index`` both old and
-       new parents). Update the new subfolders' READMEs and the parent's
-       description.
-     - Check for near-duplicate pages. Merge with ``write_slot`` +
-       ``rm`` rather than leaving both.
-     - Check for stale pages that the new material supersedes; ``rm``
-       them and clean up hrefs.
+     - Empty folder ``description`` slot → write one short paragraph.
+     - More than ~7 direct pages → propose a split with ``mv``.
+     - Near-duplicates → merge then delete.
+     - Stale pages superseded by new material → ``rm`` + clean hrefs.
 
-  3. REPEAT from (1) with the next cluster, until all analysis items
-     are handled.
+  3. REPEAT with the next cluster.
 
-After all clusters are done, run one final review of the vault root
-folder index.
+After all clusters, do one final pass on the vault root README.
 
 ## Optional review queue
 
-If you noticed things needing human judgement (not just mechanical
-tidying), append at the END of your report:
+If you spot things needing human judgement, append at the END:
 
 <<<REVIEW_QUEUE>>>
 [
@@ -187,13 +137,14 @@ tidying), append at the END of your report:
 
 ## Output
 
-A short markdown report. Two sections:
+Short markdown report:
 
   ### Content
-  - bullet per page created / updated, with one-line reason.
+  - bullet per page created / updated, with one-line reason
+    and a note of which rich components you used.
 
   ### Tidying
-  - bullet per folder reorganised, renamed, or split.
+  - bullet per folder reorganised / renamed / split.
   - bullet per page moved, merged, or deleted.
 
 ## Analysis
@@ -206,20 +157,71 @@ A short markdown report. Two sections:
 """
 
 
+DEFAULT_ENRICHMENT_PROMPT = """\
+You are enriching an existing wiki page. The shell is fine; do NOT touch
+the meta block or template — only the slot contents.
+
+Page path:  {page_path}
+Template:   {template}
+
+## Visual component palette — your toolbox
+
+{component_palette}
+
+## Current page slots
+
+{slots_dump}
+
+## Your task
+
+For each slot in the current page, decide whether the content can be
+turned into something more visual using the palette above. Then rewrite
+the slot using the harness ``write_slot`` action via your file tools
+(edit the file in place, replacing the content between the slot's
+``<!-- wah:slot id="X" --> ... <!-- /wah:slot -->`` markers).
+
+Concrete heuristics:
+  - lists of numeric facts → stat-grid
+  - 2-8 cross-links / subtopics → card-grid
+  - decision flows / architecture → mermaid flowchart
+  - chronological events / project log → timeline
+  - key-value attribute dumps → kv list
+  - benchmark / comparison numbers → chart (Chart.js)
+  - critical aside or cross-reference → callout (info / warn)
+  - explanation prose → keep as ``<p>`` — don't force visuals where they
+    don't help
+
+Constraints:
+  - Preserve all factual content; never invent numbers, dates, or claims.
+  - Preserve all existing links (just relocate them into the new layout).
+  - Use only the components shown in the palette above; do not invent
+    new CSS classes.
+  - Don't change template, meta block, or slot ids.
+  - If a slot is already visually rich, leave it alone.
+
+When done, briefly report which slots you rewrote and which components
+you used.
+"""
+
+
 @dataclass(frozen=True)
 class PromptSet:
-    """Templated prompts used by the ingest pipeline.
+    """Templated prompts used by the ingest + enrichment pipelines.
 
-    Placeholders available in ``analysis``:
+    Placeholders for ``analysis``:
       ``purpose``, ``index``, ``tree``, ``templates``, ``template_details``,
       ``source``, ``source_title``.
 
-    Placeholders available in ``generation``:
+    Placeholders for ``generation``:
       ``vault_root``, ``source_slug``, ``today``, ``analysis``, ``source``,
-      ``template_details``.
+      ``template_details``, ``component_palette``.
+
+    Placeholders for ``enrichment``:
+      ``page_path``, ``template``, ``slots_dump``, ``component_palette``.
     """
     analysis: str = DEFAULT_ANALYSIS_PROMPT
     generation: str = DEFAULT_GENERATION_PROMPT
+    enrichment: str = DEFAULT_ENRICHMENT_PROMPT
 
     def with_overrides(self, **kw: str) -> "PromptSet":
         return replace(self, **kw)

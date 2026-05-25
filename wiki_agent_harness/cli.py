@@ -178,6 +178,42 @@ def cmd_rerender_all(args):
     print(f"re-rendered {n} pages")
 
 
+def _build_runtime(args):
+    """Try to construct an OpenProgram runtime. Pass --no-runtime to skip."""
+    if getattr(args, "no_runtime", False):
+        return None
+    try:
+        from openprogram.agentic_programming.runtime import Runtime
+        rt = Runtime()
+        # Anchor the workdir on the vault root so file ops target the vault.
+        if args.root and hasattr(rt, "set_workdir"):
+            rt.set_workdir(args.root)
+        return rt
+    except Exception as e:
+        print(f"warning: could not build runtime ({e}); enrich will fail",
+              file=sys.stderr)
+        return None
+
+
+def cmd_enrich(args):
+    rt = _build_runtime(args)
+    w = _wiki(args)
+    if args.target:
+        out = w.enrich_page(args.target, runtime=rt)
+    else:
+        out = w.enrich_all(
+            runtime=rt,
+            only_templates=args.template if args.template else None,
+            max_pages=args.limit,
+        )
+    _print(out)
+
+
+def cmd_components(args):
+    from .components import render_component_palette
+    print(render_component_palette())
+
+
 def cmd_search(args):
     hits = _wiki(args).search(args.query, limit=args.limit)
     if not hits:
@@ -291,6 +327,22 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("rerender-all",
                         help="re-render every managed page from its current template (preserves slots)")
     sp.set_defaults(func=cmd_rerender_all)
+
+    sp = sub.add_parser("enrich",
+                        help="agent rewrites slot(s) to use rich visual components")
+    sp.add_argument("target", nargs="?",
+                    help="page path or stem; omit to enrich all pages")
+    sp.add_argument("--template", "-t", action="append",
+                    help="restrict to pages of this template (repeatable)")
+    sp.add_argument("--limit", "-n", type=int,
+                    help="cap on number of pages when enriching all")
+    sp.add_argument("--no-runtime", action="store_true",
+                    help="don't try to build a runtime (mostly for testing)")
+    sp.set_defaults(func=cmd_enrich)
+
+    sp = sub.add_parser("components",
+                        help="print the visual component palette reference")
+    sp.set_defaults(func=cmd_components)
 
     # Search ------------------------------------------------------------
     sp = sub.add_parser("search", help="BM25 full-text search over page slots")
