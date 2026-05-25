@@ -254,6 +254,214 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
     background: linear-gradient(90deg, #6366f1, #ec4899);
     transition: width 0.1s;
   }
+
+  /* ── Legacy class compat shim ─────────────────────────────────
+     Slot content authored before the Tailwind+daisyUI migration used
+     bespoke class names. Style them natively so existing pages keep
+     looking right while new content uses daisyUI components. */
+
+  .stat-grid {
+    display: grid; gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    margin: 1.5rem 0;
+  }
+  .stat-grid .stat,
+  .stat-grid > .stat {
+    position: relative; padding: 1.1rem 1.2rem;
+    background: hsl(var(--b1));
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.75rem;
+    overflow: hidden; display: block;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .stat-grid .stat:hover { border-color: hsl(var(--p)); transform: translateY(-1px); }
+  .stat-grid .stat::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(180deg, #6366f1, #ec4899);
+  }
+  .stat-grid .stat .num {
+    display: block; font-size: 1.85rem; font-weight: 800;
+    color: hsl(var(--bc)); line-height: 1.1;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  }
+  .stat-grid .stat .num .unit { font-size: 0.6em; font-weight: 600; color: hsl(var(--bc) / 0.6); margin-left: 0.18em; }
+  .stat-grid .stat .label { font-size: 0.78rem; color: hsl(var(--bc) / 0.6); margin-top: 0.3rem; display: block; font-weight: 500; }
+  .stat-grid .stat .delta {
+    display: inline-block; font-size: 0.72rem; font-weight: 600; margin-top: 0.35rem;
+    padding: 0.08rem 0.45rem; border-radius: 0.3rem;
+  }
+  .stat-grid .stat .delta.up   { color: hsl(var(--su)); background: hsl(var(--su) / 0.12); }
+  .stat-grid .stat .delta.down { color: hsl(var(--er)); background: hsl(var(--er) / 0.12); }
+
+  /* legacy .callout — render like daisyUI alert */
+  .callout {
+    position: relative; padding: 0.95rem 1.15rem 0.95rem 2.6rem;
+    border-radius: 0.75rem; margin: 1.25rem 0; line-height: 1.6;
+    background: hsl(var(--p) / 0.08);
+    border: 1px solid hsl(var(--p) / 0.25);
+    color: hsl(var(--bc));
+  }
+  .callout > :first-child { margin-top: 0; }
+  .callout > :last-child  { margin-bottom: 0; }
+  .callout::before {
+    position: absolute; left: 0.85rem; top: 0.95rem;
+    width: 1.25rem; height: 1.25rem; line-height: 1.25rem;
+    text-align: center; font-weight: 700; border-radius: 50%;
+    color: white; content: 'i'; font-family: serif; font-style: italic;
+    background: hsl(var(--in));
+  }
+  .callout.info    { background: hsl(var(--in) / 0.08); border-color: hsl(var(--in) / 0.25); }
+  .callout.warn    { background: hsl(var(--wa) / 0.08); border-color: hsl(var(--wa) / 0.25); }
+  .callout.success { background: hsl(var(--su) / 0.08); border-color: hsl(var(--su) / 0.25); }
+  .callout.danger  { background: hsl(var(--er) / 0.08); border-color: hsl(var(--er) / 0.25); }
+  .callout.warn::before    { content: '!'; background: hsl(var(--wa)); }
+  .callout.success::before { content: '✓'; background: hsl(var(--su)); }
+  .callout.danger::before  { content: '✕'; background: hsl(var(--er)); }
+
+  /* legacy .card-grid + .card — only when NOT inside the new daisyUI card scheme */
+  .card-grid {
+    display: grid; gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  .card-grid > a.card,
+  .card-grid > .card:not(.card-body) {
+    position: relative; display: block; padding: 1rem 1.1rem;
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.75rem;
+    text-decoration: none; color: inherit;
+    background: hsl(var(--b1));
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+  }
+  .card-grid > a.card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(180deg, #6366f1, #ec4899);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .card-grid > a.card:hover {
+    border-color: hsl(var(--p) / 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -8px hsl(var(--p) / 0.3);
+  }
+  .card-grid > a.card:hover::before { opacity: 1; }
+  .card-grid > a.card > h3 {
+    margin: 0 0 0.35rem 0; font-size: 0.98rem; font-weight: 600;
+    color: hsl(var(--bc)); border: none; padding: 0; letter-spacing: -0.005em;
+  }
+  .card-grid > a.card > p {
+    margin: 0; font-size: 0.83rem; color: hsl(var(--bc) / 0.6); line-height: 1.55;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+
+  /* legacy .page-list / .row-link */
+  .page-list { display: flex; flex-direction: column; gap: 0.15rem; }
+  .row-link {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.55rem 0.9rem; border-radius: 0.45rem; text-decoration: none; color: inherit;
+    border: 1px solid transparent; transition: background 0.12s, border-color 0.12s;
+  }
+  .row-link:hover {
+    background: hsl(var(--b2));
+    border-color: hsl(var(--b3));
+  }
+  .row-link .title { font-weight: 500; color: hsl(var(--bc)); }
+  .row-link:hover .title { color: hsl(var(--p)); }
+  .row-link > span > .icon { margin-right: 0.55rem; opacity: 0.45; }
+  .row-link .meta {
+    display: flex; gap: 0.7rem; align-items: center;
+    font-size: 0.72rem; color: hsl(var(--bc) / 0.5);
+  }
+  .row-link .template {
+    padding: 0.1rem 0.55rem;
+    background: hsl(var(--b2));
+    border-radius: 0.3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+  }
+
+  /* legacy .kv definition list */
+  dl.kv {
+    display: grid; grid-template-columns: max-content 1fr;
+    gap: 0.55rem 1.2rem; margin: 1rem 0; font-size: 0.92rem;
+    padding: 0.85rem 1rem;
+    background: hsl(var(--b2));
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--b3));
+  }
+  dl.kv dt { color: hsl(var(--bc) / 0.6); font-weight: 600; font-size: 0.85rem; }
+  dl.kv dd { margin: 0; color: hsl(var(--bc)); }
+
+  /* legacy bespoke .timeline (different from daisyUI .timeline) — disambiguate
+     by only matching when content uses our old .timeline-item children */
+  .timeline:has(.timeline-item) {
+    position: relative; padding-left: 1.5rem; margin: 1.75rem 0;
+    list-style: none;
+  }
+  .timeline:has(.timeline-item)::before {
+    content: ''; position: absolute; left: 0.4rem; top: 0.4rem; bottom: 0.4rem;
+    width: 2px; background: linear-gradient(180deg, hsl(var(--p)), hsl(var(--b3)));
+  }
+  .timeline-item { position: relative; padding: 0.4rem 0 1.1rem 0.7rem; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -1.4rem; top: 0.75rem;
+    width: 0.65rem; height: 0.65rem; border-radius: 50%;
+    background: hsl(var(--p));
+    box-shadow: 0 0 0 4px hsl(var(--b1)), 0 0 0 5px hsl(var(--b3));
+  }
+  .timeline-item .when {
+    font-size: 0.72rem; color: hsl(var(--p)); font-weight: 600;
+    margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .timeline-item .what { font-weight: 500; line-height: 1.55; }
+
+  /* legacy .lede outside hero */
+  .lede:not(.wah-hero .lede) {
+    font-size: 1.05rem; color: hsl(var(--bc) / 0.65); line-height: 1.65;
+    margin: 0 0 1.5rem 0;
+  }
+
+  /* legacy .badge / .pill — keep but make non-conflicting with daisyUI */
+  .badge:not(.badge-primary):not(.badge-secondary):not(.badge-accent):not(.badge-neutral):not(.badge-info):not(.badge-success):not(.badge-warning):not(.badge-error):not(.badge-ghost):not(.badge-outline) {
+    display: inline-block; padding: 0.15rem 0.6rem;
+    font-size: 0.7rem; font-weight: 600;
+    background: hsl(var(--p) / 0.12); color: hsl(var(--p));
+    border-radius: 0.4rem; font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    height: auto; line-height: 1.4;
+  }
+  .pill {
+    display: inline-block; padding: 0.18rem 0.75rem;
+    font-size: 0.75rem; font-weight: 600;
+    background: linear-gradient(135deg, #6366f1, #ec4899); color: white;
+    border-radius: 999px;
+  }
+
+  /* legacy .meta-strip / .status */
+  .meta-strip {
+    display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center;
+    font-size: 0.825rem; color: hsl(var(--bc) / 0.6);
+    margin-bottom: 1.5rem;
+  }
+  .meta-strip .status {
+    background: linear-gradient(135deg, #6366f1, #ec4899); color: white;
+    padding: 0.18rem 0.7rem; border-radius: 999px;
+    font-weight: 600; font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 8px -2px hsl(var(--p) / 0.5);
+  }
+
+  /* legacy .section-label */
+  .section-label {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    color: hsl(var(--p)); margin: 2.5rem 0 1rem 0; border: none; padding: 0;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, hsl(var(--b3)), transparent);
+  }
+  [data-theme="dark"] .section-label { color: #a5b4fc; }
 </style>
 {%- block head_extra %}{% endblock %}
 </head>
