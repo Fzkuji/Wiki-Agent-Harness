@@ -138,6 +138,26 @@ $$\\mathcal{L} = -\\mathbb{E}_{x\\sim p}[\\log q(x)]$$""",
         "when": "Figures you want click-to-zoom (lightbox).",
         "example": '<figure><a href="figs/big.png" class="zoomable"><img src="figs/big.png" alt="..."></a><figcaption>...</figcaption></figure>',
     },
+    {
+        "name": "gloss tooltip",
+        "when": (
+            "An inline definition for a sub-topic term you don't want to "
+            "interrupt the prose to explain. Hover shows a small tooltip. "
+            "Use this when (a) defining the term inline would derail the "
+            "sentence, AND (b) there's no full page worth linking to yet. "
+            "The tooltip text must still follow the audience-baseline rule "
+            "— only use words the reader already knows."
+        ),
+        "example": """\
+The teacher's <span class="gloss" data-tip="A probability over the
+vocabulary at each generation step, the LLM's raw guess for the next
+token before sampling.">output distribution</span> drives the loss.
+
+Or with a link to a full page:
+<a class="gloss" href="concepts/kl-divergence.html"
+   data-tip="A number measuring how different two probability
+distributions are; zero means identical.">KL divergence</a>""",
+    },
 ]
 
 
@@ -154,6 +174,7 @@ RULES OF THUMB
   - Numeric data series with comparisons     → chart
   - Formulas                                 → KaTeX $..$ / $$..$$
   - Code                                     → pre code with language-X
+  - Inline jargon you can't gracefully redefine  → <span class="gloss" data-tip="…">
 
 DEFAULT TO RICH. A page that's just <p>/<ul> is the failure case.
 If content fits any pattern above, use the component. Plain prose is

@@ -105,6 +105,14 @@ EXPLANATION DISCIPLINE — non-negotiable:
      overview page references it via <a href> without dropping the
      reader into the deep end.
 
+  6. Hover-tooltip escape hatch: when a term technically needs definition
+     but inlining the definition would derail the sentence, wrap it in
+     ``<span class="gloss" data-tip="short definition">term</span>``.
+     The reader gets the term in flow, sees a tooltip on hover.
+     The tooltip text itself MUST still follow rules 1-3 — baseline
+     vocab only, never jargon-defining-jargon. Prefer this over
+     "introduce a sub-topic term and just let it stand naked".
+
 Example of the right move: when documenting "Knowledge Distillation
 for LLMs" for an audience that knows LLMs but not KD, write
 "Knowledge Distillation: train a small **student** LLM to mimic a

@@ -374,6 +374,57 @@ Lazy-loaded when content uses them:
   }
   .zoomable { cursor: zoom-in; }
 
+  /* ── glossary hover tooltip ──────────────────────────────── */
+  .gloss {
+    position: relative;
+    border-bottom: 1px dashed var(--pico-primary);
+    cursor: help;
+    text-decoration: none;
+  }
+  a.gloss { color: inherit; background-image: none; }
+  a.gloss:hover { color: var(--pico-primary); background-image: none; }
+  .gloss::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--pico-card-background-color, white);
+    color: var(--pico-color);
+    border: 1px solid var(--pico-muted-border-color);
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.45rem;
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.2);
+    font-size: 0.83rem;
+    font-weight: 400;
+    line-height: 1.55;
+    width: max-content;
+    max-width: 320px;
+    white-space: normal;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s, visibility 0.12s;
+  }
+  .gloss::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--pico-muted-border-color);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s, visibility 0.12s;
+    z-index: 101;
+  }
+  .gloss:hover::after, .gloss:focus::after,
+  .gloss:hover::before, .gloss:focus::before {
+    opacity: 1; visibility: visible;
+  }
+
   /* ── meta strip ──────────────────────────────────────────── */
   .meta-strip {
     display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center;
