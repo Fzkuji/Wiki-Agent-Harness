@@ -255,6 +255,22 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
     transition: width 0.1s;
   }
 
+  /* Copy button on <pre> blocks */
+  .wah-copy {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: hsl(var(--b1) / 0.9);
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.4rem;
+    color: hsl(var(--bc) / 0.6);
+    opacity: 0; cursor: pointer;
+    transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+    line-height: 0;
+  }
+  pre:hover .wah-copy { opacity: 1; }
+  .wah-copy:hover { background: hsl(var(--b2)); color: hsl(var(--p)); border-color: hsl(var(--p) / 0.5); }
+  .wah-copy.copied { color: hsl(var(--su)); border-color: hsl(var(--su) / 0.5); opacity: 1; }
+
   /* ── Legacy class compat shim ─────────────────────────────────
      Slot content authored before the Tailwind+daisyUI migration used
      bespoke class names. Style them natively so existing pages keep
@@ -707,6 +723,32 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
       window.GLightbox({ selector: '.zoomable' });
     });
   }
+
+  // Copy button on every <pre> (except mermaid + opt-out .no-copy).
+  const copySvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  const checkSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  document.querySelectorAll('pre:not(.mermaid):not(.no-copy)').forEach(pre => {
+    if (pre.querySelector('.wah-copy')) return;
+    if (getComputedStyle(pre).position === 'static') pre.style.position = 'relative';
+    const btn = document.createElement('button');
+    btn.className = 'wah-copy';
+    btn.type = 'button';
+    btn.title = 'copy';
+    btn.innerHTML = copySvg;
+    btn.addEventListener('click', () => {
+      const code = pre.querySelector('code');
+      const text = code ? code.innerText : pre.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = checkSvg;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = copySvg;
+        }, 1400);
+      });
+    });
+    pre.appendChild(btn);
+  });
 })();
 </script>
 
