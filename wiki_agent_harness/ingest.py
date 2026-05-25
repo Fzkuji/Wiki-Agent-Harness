@@ -79,6 +79,7 @@ def ingest_session(
     prompts: PromptSet,
     runtime: Any,
     purpose: str = "",
+    audience: str = "",
 ) -> dict[str, Any]:
     """Run the two-step ingest over a finished conversation.
 
@@ -102,6 +103,7 @@ def ingest_session(
     # ── Step 1: analysis ───────────────────────────────────────────────
     analysis_prompt = prompts.analysis.format(
         purpose=purpose or "(no explicit purpose set)",
+        audience=audience or "(no explicit audience set)",
         index=index_str,
         tree=tree_str,
         templates=template_names,
@@ -126,6 +128,7 @@ def ingest_session(
         vault_root=str(vault_root),
         source_slug=slug,
         today=today,
+        audience=audience or "(no explicit audience set)",
         analysis=analysis,
         source=source,
         template_details=template_details,
@@ -189,6 +192,7 @@ def enrich_page(
     renderer: Renderer,
     prompts: PromptSet,
     runtime: Any,
+    audience: str = "",
 ) -> dict[str, Any]:
     """Ask the runtime to rewrite a page's slots using the rich component
     palette. The agent edits the file in place via its standard file tools.
@@ -219,6 +223,7 @@ def enrich_page(
     prompt = prompts.enrichment.format(
         page_path=str(page_path),
         template=template,
+        audience=audience or "(no explicit audience set)",
         slots_dump=slots_dump,
         component_palette=render_component_palette(),
     )

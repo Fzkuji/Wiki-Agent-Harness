@@ -24,6 +24,12 @@ For each piece of durable knowledge in the source, list:
   - VISUAL HINTS — note structures in the source that should become rich
     components (numerics → stat-grid; processes → mermaid; chronology →
     timeline; comparisons → chart/table; key facts → callout).
+  - AUDIENCE FRICTION — for each new concept, flag any term that is
+    NOT inside the audience's assumed baseline (see Audience below)
+    AND not already defined in the current wiki index. These are
+    concepts that need to be either (a) defined in their own page,
+    or (b) explained inline anchored to the baseline. The writer needs
+    to know about them up front.
 
 Then add a final ``Folder housekeeping`` section listing concrete tidy
 actions the writer should perform after the content updates.
@@ -34,6 +40,11 @@ Be concise. Skip ephemeral chatter. Output plain text, not JSON.
 
 ## Wiki purpose (governs scope)
 {purpose}
+
+---
+
+## Audience (what the reader already knows)
+{audience}
 
 ---
 
@@ -65,6 +76,46 @@ the vault root.
 Vault root:        {vault_root}
 Source identifier: {source_slug}
 Today:             {today}
+
+## Audience (CRITICAL — controls how you explain concepts)
+
+{audience}
+
+EXPLANATION DISCIPLINE — non-negotiable:
+
+  1. The audience above is what the reader is assumed to ALREADY KNOW.
+     Use those concepts freely in explanations without re-defining.
+
+  2. Anything OUTSIDE the audience baseline is a "sub-topic concept" the
+     reader does NOT know. Every sub-topic concept must be either:
+       (a) explained inline by reducing it to baseline concepts, or
+       (b) linked to its own page (which itself follows the same rule).
+
+  3. NEVER explain one sub-topic concept using another sub-topic concept
+     that hasn't been introduced yet. That's the failure mode:
+     "jargon explaining jargon" leaves the reader understanding nothing.
+
+  4. When introducing a sub-topic concept on its first appearance:
+     - one-sentence definition in baseline terms (the "what")
+     - one-sentence motivation in baseline terms (the "why anyone cares")
+     - then proceed with detail
+
+  5. If a concept genuinely needs deeper machinery (e.g. a formula, a
+     specialized algorithm), put that detail in its OWN page; the
+     overview page references it via <a href> without dropping the
+     reader into the deep end.
+
+Example of the right move: when documenting "Knowledge Distillation
+for LLMs" for an audience that knows LLMs but not KD, write
+"Knowledge Distillation: train a small **student** LLM to mimic a
+large **teacher** LLM's outputs token-by-token, so the student gets
+the teacher's behaviour at a fraction of the parameters." — every
+load-bearing word here is either baseline (LLM, train, parameters,
+outputs, token) or defined in-place (student, teacher).
+
+Example of the wrong move: "KD minimises forward-KL on the teacher's
+softmax with temperature scaling" — softmax temperature, forward-KL,
+softmax-with-T are all sub-topic concepts the reader doesn't have.
 
 ## Two responsibilities, equal weight
 
@@ -164,6 +215,23 @@ the meta block or template — only the slot contents.
 Page path:  {page_path}
 Template:   {template}
 
+## Audience (CRITICAL — controls how you explain concepts)
+
+{audience}
+
+EXPLANATION DISCIPLINE — non-negotiable:
+
+  - The audience is what the reader ALREADY KNOWS — use those concepts
+    freely without re-defining.
+  - Anything OUTSIDE the audience baseline is a "sub-topic concept" the
+    reader does NOT know. On first appearance, define it in baseline
+    terms with one-sentence what + one-sentence why.
+  - NEVER explain one undefined sub-topic concept using another
+    undefined sub-topic concept (jargon explaining jargon).
+  - If the page already had unanchored jargon, this is your chance to
+    fix it — rewrite the explanation in baseline terms or link to a
+    sub-topic page that defines it.
+
 ## Visual component palette — your toolbox
 
 {component_palette}
@@ -209,15 +277,16 @@ class PromptSet:
     """Templated prompts used by the ingest + enrichment pipelines.
 
     Placeholders for ``analysis``:
-      ``purpose``, ``index``, ``tree``, ``templates``, ``template_details``,
-      ``source``, ``source_title``.
+      ``purpose``, ``audience``, ``index``, ``tree``, ``templates``,
+      ``template_details``, ``source``, ``source_title``.
 
     Placeholders for ``generation``:
-      ``vault_root``, ``source_slug``, ``today``, ``analysis``, ``source``,
-      ``template_details``, ``component_palette``.
+      ``vault_root``, ``source_slug``, ``today``, ``audience``,
+      ``analysis``, ``source``, ``template_details``, ``component_palette``.
 
     Placeholders for ``enrichment``:
-      ``page_path``, ``template``, ``slots_dump``, ``component_palette``.
+      ``page_path``, ``template``, ``audience``, ``slots_dump``,
+      ``component_palette``.
     """
     analysis: str = DEFAULT_ANALYSIS_PROMPT
     generation: str = DEFAULT_GENERATION_PROMPT
@@ -225,3 +294,10 @@ class PromptSet:
 
     def with_overrides(self, **kw: str) -> "PromptSet":
         return replace(self, **kw)
+
+
+DEFAULT_AUDIENCE = """\
+A generally technical reader. No specific domain assumed beyond what
+the wiki ``purpose`` statement implies. If the writer is unsure whether
+a term needs definition, they should err on the side of defining it.
+"""

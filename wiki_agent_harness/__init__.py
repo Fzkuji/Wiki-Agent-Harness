@@ -69,6 +69,7 @@ class Wiki:
         prompts: PromptSet | None = None,
         runtime: Any | None = None,
         purpose: str = "",
+        audience: str = "",
     ) -> None:
         self.root: Path = (
             Path(root).expanduser() if root else store.root()
@@ -82,6 +83,8 @@ class Wiki:
         self.prompts = prompts or PromptSet()
         self.runtime = runtime
         self.purpose = purpose
+        from .prompts import DEFAULT_AUDIENCE
+        self.audience = audience or DEFAULT_AUDIENCE
 
     # ── Read ────────────────────────────────────────────────────────────
     def find(self, name: str) -> Path | None:
@@ -230,6 +233,7 @@ class Wiki:
             prompts=self.prompts,
             runtime=runtime or self.runtime,
             purpose=self.purpose,
+            audience=self.audience,
         )
 
     def enrich_page(
@@ -243,6 +247,7 @@ class Wiki:
             renderer=self.renderer,
             prompts=self.prompts,
             runtime=runtime or self.runtime,
+            audience=self.audience,
         )
 
     def enrich_all(
