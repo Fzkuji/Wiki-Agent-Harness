@@ -1,0 +1,43 @@
+{#- description: explanation page. Slots: summary, body, examples, related_notes. Use for abstract ideas, definitions, techniques. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <div class="callout">
+    <!-- wah:slot id="summary" -->
+    <!-- /wah:slot -->
+  </div>
+
+  <section>
+    <h2>Detail</h2>
+    <!-- wah:slot id="body" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+    <!-- wah:slot id="examples" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Notes</h2>
+    <!-- wah:slot id="related_notes" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card">
+      <h3>{{ r.title }}</h3>
+      {%- if r.note %}<p>{{ r.note }}</p>{%- endif %}
+    </a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

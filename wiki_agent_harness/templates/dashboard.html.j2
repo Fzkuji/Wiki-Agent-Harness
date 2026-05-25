@@ -1,0 +1,54 @@
+{#- description: results / metrics dashboard. Slots: summary, stats (a .stat-grid), charts (<canvas data-chart=…>), table, takeaways. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <p class="lede">
+    <!-- wah:slot id="summary" -->
+    <!-- /wah:slot -->
+  </p>
+
+  <section>
+    <!-- wah:slot id="stats" -->
+    <!-- e.g.
+      <div class="stat-grid">
+        <div class="stat"><span class="num">68.4<span class="unit">%</span></span><span class="label">baseline EM</span></div>
+        <div class="stat"><span class="num">87.6<span class="unit">%</span></span><span class="label">after fix</span><span class="delta up">+19.2</span></div>
+      </div>
+    -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Charts</h2>
+    <!-- wah:slot id="charts" -->
+    <!-- e.g.
+      <canvas data-chart='{"type":"bar","data":{"labels":["A","B","C"],"datasets":[{"label":"score","data":[12,19,7]}]}}' style="max-width: 600px;"></canvas>
+    -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Detail</h2>
+    <!-- wah:slot id="table" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Takeaways</h2>
+    <!-- wah:slot id="takeaways" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

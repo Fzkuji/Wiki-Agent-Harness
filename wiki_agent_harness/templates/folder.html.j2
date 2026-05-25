@@ -1,0 +1,46 @@
+{#- description: auto-generated folder index (index.html). Lists pages and subfolders. Re-rendered automatically; do not edit by hand. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<header>
+  <h1>{{ meta.get("title", "Index") }}</h1>
+  <article>
+    <!-- wah:slot id="description" -->
+    <!-- /wah:slot -->
+  </article>
+</header>
+
+{%- set folders = children | selectattr("kind", "equalto", "folder") | list %}
+{%- set pages   = children | selectattr("kind", "equalto", "page") | list %}
+
+{%- if folders %}
+<h2 class="section-label">Folders · {{ folders | length }}</h2>
+<div class="card-grid">
+  {%- for c in folders %}
+  <a href="{{ c.href }}" class="card">
+    <h3><span class="icon">▸</span>{{ c.title }}</h3>
+    {%- if c.note %}<p>{{ c.note }}</p>{%- endif %}
+  </a>
+  {%- endfor %}
+</div>
+{%- endif %}
+
+{%- if pages %}
+<h2 class="section-label">Pages · {{ pages | length }}</h2>
+<div class="page-list">
+  {%- for c in pages %}
+  <a href="{{ c.href }}" class="row-link">
+    <span><span class="icon">·</span><span class="title">{{ c.title }}</span></span>
+    <span class="meta">
+      {%- if c.template %}<span class="template">{{ c.template }}</span>{%- endif %}
+      {%- if c.updated %}<span>{{ c.updated }}</span>{%- endif %}
+    </span>
+  </a>
+  {%- endfor %}
+</div>
+{%- endif %}
+
+{%- if not folders and not pages %}
+<p style="color: var(--pico-muted-color); margin-top: 2rem;">empty folder</p>
+{%- endif %}
+{% endblock %}

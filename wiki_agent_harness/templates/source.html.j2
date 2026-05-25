@@ -1,0 +1,47 @@
+{#- description: external reference (paper, article, talk, dataset). Slots: citation, abstract, key_points, excerpts. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <div class="meta-strip">
+    {%- if meta.get("url") %}
+    <a href="{{ meta.url }}" target="_blank" rel="noopener">↗ {{ meta.url }}</a>
+    {%- endif %}
+    <span class="status" style="font-family: var(--pico-font-family-monospace);">source</span>
+  </div>
+
+  <div class="callout">
+    <!-- wah:slot id="citation" -->
+    <!-- /wah:slot -->
+  </div>
+
+  <section>
+    <h2>Abstract</h2>
+    <!-- wah:slot id="abstract" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Key points</h2>
+    <!-- wah:slot id="key_points" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Excerpts</h2>
+    <!-- wah:slot id="excerpts" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

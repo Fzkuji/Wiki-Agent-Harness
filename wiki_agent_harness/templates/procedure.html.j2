@@ -1,0 +1,43 @@
+{#- description: step-by-step how-to. Slots: summary, prerequisites, steps, pitfalls. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <p class="lede">
+    <!-- wah:slot id="summary" -->
+    <!-- /wah:slot -->
+  </p>
+
+  <section>
+    <h2>Prerequisites</h2>
+    <!-- wah:slot id="prerequisites" -->
+    <!-- /wah:slot -->
+  </section>
+
+  <section>
+    <h2>Steps</h2>
+    <ol>
+      <!-- wah:slot id="steps" -->
+      <!-- fill: <li><strong>title</strong><br>detail.</li> -->
+      <!-- /wah:slot -->
+    </ol>
+  </section>
+
+  <section>
+    <h2>Pitfalls</h2>
+    <!-- wah:slot id="pitfalls" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

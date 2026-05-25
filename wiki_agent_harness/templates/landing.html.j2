@@ -1,0 +1,30 @@
+{#- description: top-level overview / hero. Slots: tagline, body, highlights. Use for the vault root or top of a major area. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<header style="text-align: center; padding: 2.5rem 0 2rem 0;">
+  <h1 style="font-size: 2.75rem; margin-bottom: 0.75rem;">{{ meta.get("title", "Untitled") }}</h1>
+  <p class="lede" style="text-align: center; max-width: 560px; margin: 0 auto;">
+    <!-- wah:slot id="tagline" -->
+    <!-- /wah:slot -->
+  </p>
+</header>
+
+<article>
+  <!-- wah:slot id="body" -->
+  <!-- /wah:slot -->
+</article>
+
+<section>
+  <div class="card-grid">
+    <!-- wah:slot id="highlights" -->
+    <!-- fill cards like:
+      <a href="..." class="card">
+        <h3>Title</h3>
+        <p>Description.</p>
+      </a>
+    -->
+    <!-- /wah:slot -->
+  </div>
+</section>
+{% endblock %}

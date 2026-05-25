@@ -1,0 +1,20 @@
+{#- description: free-form note. Single body slot. Catch-all when no other template fits. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <!-- wah:slot id="body" -->
+  <!-- /wah:slot -->
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

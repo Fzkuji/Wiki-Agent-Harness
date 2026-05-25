@@ -1,0 +1,41 @@
+{#- description: chronological log of events (project diary, paper revision history, lit-review timeline). Slots: summary, events, notes. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <p class="lede">
+    <!-- wah:slot id="summary" -->
+    <!-- /wah:slot -->
+  </p>
+
+  <section>
+    <div class="timeline">
+      <!-- wah:slot id="events" -->
+      <!-- e.g.
+        <div class="timeline-item">
+          <div class="when">2026-05-17</div>
+          <div class="what"><strong>Pilot run</strong> — Qwen3-1.7B, AIME24, OPSD reproduced 68.4% EM.</div>
+        </div>
+      -->
+      <!-- /wah:slot -->
+    </div>
+  </section>
+
+  <section>
+    <h2>Notes</h2>
+    <!-- wah:slot id="notes" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}

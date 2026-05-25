@@ -1,155 +1,262 @@
-"""wiki_agent_harness — portable Obsidian-style wiki subsystem for AI agents.
+"""wiki_agent_harness — HTML-first, template-driven wiki for AI agents.
 
-Zero external dependencies (pure stdlib).
+Three layers:
+  1. Templates (Jinja2 + Tailwind/DaisyUI CDN) define page shells and slots.
+  2. Agent fills slots; never writes raw HTML by hand.
+  3. Folder ``index.html`` indexes are auto-generated.
 
 Example::
 
-    from wiki_agent_harness import Wiki
+    from wiki_agent_harness import Wiki, PromptSet
 
     w = Wiki(root="~/my-vault")
     print(w.tree())
-    print(w.lint())
-    links = w.backlinks("SomeTopic")
+
+    # Create a fresh page from the 'concept' template.
+    path = w.new_page("topic-a/transformers", template="concept",
+                      meta={"title": "Transformers", "tags": ["nlp"]})
+    w.write_slot(path, "summary", "An attention-based architecture.")
+
+    # Search.
+    for hit in w.search("attention"):
+        print(hit.path, hit.score)
+
+    # Specialise prompts for a downstream project.
+    w2 = Wiki(
+        root="~/paper-vault",
+        extra_template_dirs=["./my-paper-templates"],
+        prompts=PromptSet().with_overrides(analysis=PAPER_ANALYSIS_PROMPT),
+    )
 """
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from . import access, enrich, helpers, ingest, ops
-
-# Free-function re-exports for callers that prefer module-level API.
-from .access import (  # noqa: F401
-    find, read, tree, iter_pages, page_type, pages_of_type, root,
-)
-from .ops import (  # noqa: F401
-    lint, rename, relink, prune_broken_links, backlinks,
-    unlinked_mentions, survey, refactor, git_commit,
-)
-from .ingest import (  # noqa: F401
-    ingest_session, ingest_session_by_id,
-)
-from .enrich import (  # noqa: F401
-    enrich_page, enrich_pages, enrich_inbound_for_new_page,
-)
+from . import index as _idx
+from . import ingest as _ingest
+from . import ops as _ops
+from . import pages as _pages
+from . import slots as _slots
+from . import store
+from .prompts import PromptSet
+from .renderer import Renderer, TemplateInfo, materialize_new_page
 
 
 class Wiki:
-    """Bound view of a single vault.
+    """Bound view of one vault.
 
     Args:
-        root: Vault root directory. If omitted, uses ``store.root()``
-            (``WAH_VAULT`` env var or ``~/.agentic/memory/wiki``).
-        runtime: Optional runtime for agentic ops (ingest, survey, refactor).
-        llm: Optional ``(system, user) -> str`` callable for non-agentic
-            LLM calls (enrich).
+        root: Vault root directory. Falls back to ``WAH_VAULT`` env or
+            ``~/.agentic/memory/wiki``.
+        extra_template_dirs: Additional Jinja2 template directories. Templates
+            here take precedence over built-ins of the same name. Downstream
+            projects use this to add domain-specific templates.
+        prompts: Optional :class:`PromptSet` overriding the default ingest
+            prompts. Downstream projects use this to specialise the
+            analysis/generation pipeline for a specific domain.
+        runtime: Optional agentic runtime used by ``ingest_session``. Anything
+            with ``exec(content=[...], tools=..., max_iterations=...)`` works.
+        purpose: One-paragraph statement of what the vault is for; passed
+            into the ingest analysis prompt to govern scope.
     """
 
     def __init__(
         self,
         root: str | Path | None = None,
         *,
+        extra_template_dirs: list[str | Path] | None = None,
+        prompts: PromptSet | None = None,
         runtime: Any | None = None,
-        llm: Callable[[str, str], str] | None = None,
+        purpose: str = "",
     ) -> None:
-        from . import store as _store
-        self.root: Path = Path(root).expanduser() if root else _store.root()
+        self.root: Path = (
+            Path(root).expanduser() if root else store.root()
+        )
         self.root.mkdir(parents=True, exist_ok=True)
-        self._state_dir = self.root.parent / ".state"
-        self._db_path = _store.index_db_path(self._state_dir)
-        self._runtime = runtime
-        self._llm = llm
+        self.state_dir = store.state_dir(self.root)
+        self._db_path = store.index_db_path(self.state_dir)
+        self.renderer = Renderer(
+            extra_template_dirs=[Path(p) for p in (extra_template_dirs or [])]
+        )
+        self.prompts = prompts or PromptSet()
+        self.runtime = runtime
+        self.purpose = purpose
 
     # ── Read ────────────────────────────────────────────────────────────
     def find(self, name: str) -> Path | None:
-        return helpers.find_node(self.root, name)
+        return _pages.find(name, self.root)
 
     def read(self, target: str | Path) -> str | None:
-        return access.read(target, vault_root=self.root)
+        return _pages.read(target, self.root)
 
     def tree(self, *, max_depth: int = 8) -> str:
-        return helpers.folder_tree(self.root, max_depth=max_depth)
+        return _pages.folder_tree(self.root, max_depth=max_depth)
+
+    def index(self) -> str:
+        """Flat list of all content page paths, vault-relative."""
+        return _pages.folder_index(self.root)
 
     def iter_pages(self):
-        yield from helpers.iter_md_files(self.root)
+        yield from _pages.iter_pages(self.root)
 
-    def page_type(self, path: Path) -> str | None:
-        return access.page_type(path)
+    def meta(self, target: str | Path) -> dict[str, Any]:
+        html = self.read(target)
+        if html is None:
+            return {}
+        return _slots.read_meta(html)
 
-    def pages_of_type(self, t: str) -> list[Path]:
-        return access.pages_of_type(t, vault_root=self.root)
+    def slot(self, target: str | Path, slot_id: str) -> str | None:
+        html = self.read(target)
+        if html is None:
+            return None
+        return _slots.read_slot(html, slot_id)
 
-    # ── Lint + link ops ─────────────────────────────────────────────────
-    def lint(self) -> str:
-        return ops.lint(root=self.root)
+    def list_slots(self, target: str | Path) -> list[str]:
+        html = self.read(target)
+        if html is None:
+            return []
+        return _slots.list_slots(html)
 
-    def rename(self, old: str, new: str) -> dict[str, Any]:
-        return ops.rename(old, new, root=self.root)
+    # ── Templates ──────────────────────────────────────────────────────
+    def list_templates(self) -> list[TemplateInfo]:
+        return self.renderer.list_templates()
 
-    def relink(self, old: str, new: str) -> dict[str, Any]:
-        return ops.relink(old, new, root=self.root)
+    def template_help(self) -> str:
+        from .renderer import render_template_help
+        return render_template_help(self.renderer)
 
-    def prune_broken_links(self, *, dry_run: bool = True) -> dict[str, Any]:
-        return ops.prune_broken_links(dry_run=dry_run, root=self.root)
+    # ── Write ──────────────────────────────────────────────────────────
+    def new_page(
+        self,
+        path_or_name: str,
+        *,
+        template: str,
+        meta: dict[str, Any] | None = None,
+    ) -> Path:
+        """Create a fresh page.
 
-    def backlinks(self, name: str) -> list[dict[str, str]]:
-        return ops.backlinks(name, root=self.root)
-
-    def unlinked_mentions(self, name: str, *, max_per_page: int = 3) -> list[dict[str, Any]]:
-        return ops.unlinked_mentions(name, max_per_page=max_per_page, root=self.root)
-
-    # ── Agentic ops (need a runtime) ────────────────────────────────────
-    def survey(self, topic: str) -> dict[str, Any]:
-        return ops.survey(topic, root=self.root)
-
-    def refactor(self, topic: str) -> dict[str, Any]:
-        return ops.refactor(topic, root=self.root)
-
-    def ingest_session(
-        self, session_id: str, messages: list[dict[str, Any]],
-        *, runtime: Any | None = None,
-    ) -> dict[str, Any]:
-        return ingest.ingest_session(
-            session_id, messages,
-            runtime=runtime or self._runtime,
-            vault_root=self.root,
+        ``path_or_name`` may be a bare name (page goes in vault root) or a
+        relative path like ``"area/topic/page-name"`` (folders created).
+        """
+        s = str(path_or_name).strip()
+        if "/" in s:
+            folder, name = s.rsplit("/", 1)
+            folder_path: str | None = folder
+        else:
+            folder_path, name = None, s
+        return _ops.new_page(
+            name, template=template, meta=meta, folder=folder_path,
+            renderer=self.renderer, vault_root=self.root,
         )
 
-    def ingest_session_by_id(self, session_id: str) -> dict[str, Any]:
-        return ingest.ingest_session_by_id(session_id, vault_root=self.root)
+    def write_slot(self, target: str | Path, slot_id: str, content: str) -> Path:
+        path = self._resolve(target)
+        _slots.write_slot_file(path, slot_id, content)
+        _idx.update_page(path, self.root, self._db_path)
+        return path
 
-    # ── Git ─────────────────────────────────────────────────────────────
-    def git_commit(self, message: str) -> dict[str, Any]:
-        return ops.git_commit(message, root=self.root)
+    def append_slot(self, target: str | Path, slot_id: str, content: str) -> Path:
+        path = self._resolve(target)
+        _slots.append_slot_file(path, slot_id, content)
+        _idx.update_page(path, self.root, self._db_path)
+        return path
 
-    # ── Index ────────────────────────────────────────────────────────────
+    def set_meta(self, target: str | Path, updates: dict[str, Any]) -> Path:
+        path = self._resolve(target)
+        html = path.read_text(encoding="utf-8")
+        current = _slots.read_meta(html)
+        current.update(updates)
+        path.write_text(_slots.write_meta(html, current), encoding="utf-8")
+        _idx.update_page(path, self.root, self._db_path)
+        return path
+
+    def rerender_page(self, target: str | Path) -> bool:
+        """Re-render a page from its current template, preserving slots."""
+        path = self._resolve(target)
+        return _ops.rerender_page(
+            path, renderer=self.renderer, vault_root=self.root,
+        )
+
+    def rerender_all(self) -> int:
+        """Re-render every harness-managed page (after template changes)."""
+        return _ops.rerender_all_pages(self.root, renderer=self.renderer)
+
+    def rebuild_folder_index(self, folder: str | Path | None = None) -> Path:
+        if folder is None:
+            folder_path = self.root
+        elif isinstance(folder, Path):
+            folder_path = folder if folder.is_absolute() else self.root / folder
+        else:
+            folder_path = self.root / folder
+        return _ops.rebuild_folder_index(
+            folder_path, renderer=self.renderer, vault_root=self.root,
+        )
+
+    def rebuild_all_folder_indexes(self) -> int:
+        return _ops.rebuild_all_folder_indexes(
+            self.root, renderer=self.renderer,
+        )
+
+    # ── Search ─────────────────────────────────────────────────────────
+    def search(self, query: str, limit: int = 5):
+        return _idx.search(query, self._db_path, limit=limit)
+
     def reindex(self) -> int:
-        from . import index as _idx
         return _idx.reindex_all(self.root, self._db_path)
 
-    def search(self, query: str, limit: int = 5):
-        from . import index as _idx
-        return _idx.search_wiki(query, self._db_path, limit=limit)
+    # ── Health / git ───────────────────────────────────────────────────
+    def lint(self) -> str:
+        return _ops.lint(self.root, renderer=self.renderer)
 
-    # ── Stats ────────────────────────────────────────────────────────────
     def stats(self) -> dict[str, Any]:
-        return ops.stats(root=self.root)
+        return _ops.stats(self.root)
+
+    def git_commit(self, message: str) -> dict[str, Any]:
+        return _ops.git_commit(message, vault_root=self.root)
+
+    # ── Agentic ingest ─────────────────────────────────────────────────
+    def ingest_session(
+        self,
+        session_id: str,
+        messages: list[dict[str, Any]],
+        *,
+        runtime: Any | None = None,
+    ) -> dict[str, Any]:
+        return _ingest.ingest_session(
+            session_id, messages,
+            vault_root=self.root,
+            renderer=self.renderer,
+            prompts=self.prompts,
+            runtime=runtime or self.runtime,
+            purpose=self.purpose,
+        )
+
+    # ── Internal ───────────────────────────────────────────────────────
+    def _resolve(self, target: str | Path) -> Path:
+        if isinstance(target, Path):
+            return target if target.is_absolute() else self.root / target
+        s = str(target).strip()
+        if "/" in s or s.endswith(store.PAGE_SUFFIX):
+            p = self.root / s
+            if not p.suffix:
+                p = p.with_suffix(store.PAGE_SUFFIX)
+            return p
+        found = _pages.find(s, self.root)
+        if found is None:
+            raise FileNotFoundError(f"page not found: {target!r}")
+        return found
 
 
 def default() -> Wiki:
-    """Return a Wiki bound to the default vault (WAH_VAULT or ~/.agentic/memory/wiki)."""
+    """Wiki bound to the default vault (WAH_VAULT or ~/.agentic/memory/wiki)."""
     return Wiki()
 
 
 __all__ = [
-    # Class
-    "Wiki", "default",
-    # Submodules
-    "access", "helpers", "ops", "ingest", "enrich",
-    # Free-function re-exports
-    "find", "read", "tree", "iter_pages", "page_type", "pages_of_type", "root",
-    "lint", "rename", "relink", "prune_broken_links",
-    "backlinks", "unlinked_mentions", "survey", "refactor", "git_commit",
-    "ingest_session", "ingest_session_by_id",
-    "enrich_page", "enrich_pages", "enrich_inbound_for_new_page",
+    "Wiki",
+    "PromptSet",
+    "Renderer",
+    "TemplateInfo",
+    "default",
 ]

@@ -4,13 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wiki-agent-harness"
-version = "0.1.0"
-description = "Obsidian-style wiki subsystem for AI agents — portable, git-tracked, wikilink-aware"
+version = "0.2.0"
+description = "HTML-first, template-driven wiki subsystem for AI agents — agents fill slots, never write HTML by hand"
 requires-python = ">=3.11"
-dependencies = []   # pure stdlib only
+dependencies = [
+    "Jinja2>=3.1",
+    "PyYAML>=6.0",
+]
+
+[project.scripts]
+wah = "wiki_agent_harness.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
 include = ["wiki_agent_harness*"]
+
+[tool.setuptools.package-data]
+wiki_agent_harness = ["templates/*.html.j2", "templates/**/*.html.j2"]

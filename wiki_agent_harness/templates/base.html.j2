@@ -1,0 +1,424 @@
+{#- Shared shell.
+
+Always-loaded:
+  * Pico CSS v2  — semantic typography + dark mode
+  * Inter + JetBrains Mono — modern fonts
+
+Lazy-loaded only when the page content uses them
+(checked once on DOMContentLoaded; zero cost otherwise):
+  * highlight.js  — code syntax highlighting           (<pre><code class="language-…">)
+  * Mermaid       — flowcharts / sequence / gantt …    (<pre class="mermaid">)
+  * KaTeX         — math                                (`$inline$`, `$$display$$`, .math)
+  * Chart.js      — bar/line/pie charts                 (<canvas data-chart="…">)
+  * Lightbox      — click-to-zoom images                (.zoomable)
+
+Component classes you can drop into any slot:
+  .callout / .callout.info / .callout.warn / .callout.success
+  .stat-grid > .stat  (big number + label)
+  .timeline > .timeline-item
+  .kv (definition list with neat alignment)
+  .badge / .pill
+  .lede   (large gray intro paragraph)
+  .card-grid > .card
+  .row-link
+-#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+<style>
+  :root {
+    --pico-font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --pico-font-family-monospace: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --pico-font-size: 100%;
+    --pico-border-radius: 0.5rem;
+    --pico-line-height: 1.6;
+    --wah-success: #16a34a;
+    --wah-warn:    #d97706;
+    --wah-info:    var(--pico-primary);
+    --wah-danger:  #dc2626;
+  }
+  body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    animation: fade-in 0.25s ease-out;
+  }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+  /* ── top nav ──────────────────────────────────────────────── */
+  nav.top {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    margin-bottom: 1rem;
+  }
+  nav.top .brand {
+    font-weight: 600; font-size: 0.95rem;
+    color: var(--pico-color); text-decoration: none; margin-right: auto;
+  }
+  nav.top .brand::before { content: "✦ "; color: var(--pico-primary); margin-right: 0.25rem; }
+  nav.top .tags { display: flex; gap: 0.35rem; align-items: center; }
+  .tag {
+    font-size: 0.7rem; font-weight: 500;
+    padding: 0.15rem 0.6rem;
+    background: var(--pico-secondary-background); color: var(--pico-secondary);
+    border-radius: 999px; letter-spacing: 0.02em;
+  }
+  .theme-toggle {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; padding: 0.2rem 0.4rem; line-height: 1;
+    color: var(--pico-muted-color); border-radius: 0.35rem;
+    transition: background 0.15s;
+  }
+  .theme-toggle:hover { background: var(--pico-secondary-background); }
+
+  /* ── breadcrumb ──────────────────────────────────────────── */
+  .breadcrumb { font-size: 0.825rem; color: var(--pico-muted-color); margin-bottom: 2rem; }
+  .breadcrumb a { color: var(--pico-muted-color); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--pico-primary); text-decoration: underline; }
+  .breadcrumb .sep { margin: 0 0.4rem; opacity: 0.45; }
+  .breadcrumb .here { color: var(--pico-color); font-weight: 500; }
+
+  /* ── typography ──────────────────────────────────────────── */
+  main h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 0.5rem; }
+  main h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2.5rem; margin-bottom: 0.75rem;
+            padding-bottom: 0.35rem; border-bottom: 1px solid var(--pico-muted-border-color); }
+  main h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.5rem; }
+  .lede { font-size: 1.05rem; color: var(--pico-muted-color); line-height: 1.65; margin: 0 0 1.5rem 0; }
+  .section-label {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--pico-muted-color); margin: 2.5rem 0 0.85rem 0; border: none; padding: 0;
+  }
+
+  /* ── callouts (4 colors, with ::before icon) ─────────────── */
+  .callout {
+    background: var(--pico-secondary-background);
+    border-left: 3px solid var(--pico-primary);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
+    margin: 1.25rem 0; color: var(--pico-color);
+  }
+  .callout > :first-child { margin-top: 0; }
+  .callout > :last-child  { margin-bottom: 0; }
+  .callout.info    { border-left-color: var(--wah-info); }
+  .callout.warn    { border-left-color: var(--wah-warn); }
+  .callout.success { border-left-color: var(--wah-success); }
+  .callout.danger  { border-left-color: var(--wah-danger); }
+  .callout.info::before    { content: "ⓘ "; color: var(--wah-info); font-weight: 700; margin-right: 0.25rem; }
+  .callout.warn::before    { content: "⚠ "; color: var(--wah-warn); font-weight: 700; margin-right: 0.25rem; }
+  .callout.success::before { content: "✓ "; color: var(--wah-success); font-weight: 700; margin-right: 0.25rem; }
+  .callout.danger::before  { content: "✕ "; color: var(--wah-danger); font-weight: 700; margin-right: 0.25rem; }
+
+  /* ── badges + pills ──────────────────────────────────────── */
+  .badge {
+    display: inline-block; padding: 0.12rem 0.55rem;
+    font-size: 0.72rem; font-weight: 500;
+    background: var(--pico-secondary-background); color: var(--pico-secondary);
+    border-radius: 0.35rem; font-family: var(--pico-font-family-monospace);
+  }
+  .pill {
+    display: inline-block; padding: 0.15rem 0.7rem;
+    font-size: 0.75rem; font-weight: 500;
+    background: var(--pico-primary-background); color: var(--pico-primary-inverse);
+    border-radius: 999px;
+  }
+
+  /* ── stat grid (big-number stats) ────────────────────────── */
+  .stat-grid {
+    display: grid; gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin: 1.5rem 0;
+  }
+  .stat {
+    padding: 1rem 1.1rem;
+    background: var(--pico-card-background-color, white);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+  }
+  .stat .num {
+    display: block; font-size: 1.75rem; font-weight: 700;
+    color: var(--pico-color); line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .num .unit { font-size: 0.65em; font-weight: 500; color: var(--pico-muted-color); margin-left: 0.15em; }
+  .stat .label { font-size: 0.78rem; color: var(--pico-muted-color); margin-top: 0.2rem; display: block; }
+  .stat .delta { font-size: 0.75rem; font-weight: 500; }
+  .stat .delta.up   { color: var(--wah-success); }
+  .stat .delta.down { color: var(--wah-danger); }
+
+  /* ── key/value list ──────────────────────────────────────── */
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 1rem; margin: 1rem 0; font-size: 0.9rem; }
+  .kv dt { color: var(--pico-muted-color); font-weight: 500; }
+  .kv dd { margin: 0; color: var(--pico-color); }
+
+  /* ── timeline ────────────────────────────────────────────── */
+  .timeline { position: relative; padding-left: 1.5rem; margin: 1.5rem 0; }
+  .timeline::before {
+    content: ""; position: absolute; left: 0.4rem; top: 0.4rem; bottom: 0.4rem;
+    width: 2px; background: var(--pico-muted-border-color);
+  }
+  .timeline-item { position: relative; padding: 0.4rem 0 1rem 0.6rem; }
+  .timeline-item::before {
+    content: ""; position: absolute; left: -1.4rem; top: 0.75rem;
+    width: 0.6rem; height: 0.6rem; border-radius: 50%;
+    background: var(--pico-primary);
+    box-shadow: 0 0 0 3px var(--pico-background-color);
+  }
+  .timeline-item .when { font-size: 0.75rem; color: var(--pico-muted-color); margin-bottom: 0.15rem; }
+  .timeline-item .what { font-weight: 500; }
+
+  /* ── cards / page list (folder index) ────────────────────── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.65rem; }
+  .card {
+    display: block; padding: 0.85rem 1rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    text-decoration: none; color: inherit;
+    background: var(--pico-card-background-color, white);
+    transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
+  }
+  .card:hover { border-color: var(--pico-primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .card h3 { margin: 0 0 0.3rem 0; font-size: 0.95rem; font-weight: 600; color: var(--pico-color); border: none; padding: 0; }
+  .card .icon { margin-right: 0.4rem; opacity: 0.6; }
+  .card p {
+    margin: 0; font-size: 0.825rem; color: var(--pico-muted-color); line-height: 1.5;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+
+  .page-list { display: flex; flex-direction: column; gap: 0.1rem; }
+  .row-link {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0.75rem; border-radius: 0.35rem; text-decoration: none; color: inherit;
+    border: 1px solid transparent;
+  }
+  .row-link:hover { background: var(--pico-secondary-background); border-color: var(--pico-muted-border-color); }
+  .row-link .title { font-weight: 500; color: var(--pico-color); }
+  .row-link .icon { margin-right: 0.5rem; opacity: 0.5; }
+  .row-link .meta {
+    display: flex; gap: 0.7rem; align-items: center;
+    font-size: 0.72rem; color: var(--pico-muted-color);
+  }
+  .row-link .template {
+    padding: 0.08rem 0.5rem;
+    background: var(--pico-secondary-background);
+    border-radius: 0.25rem;
+    font-family: var(--pico-font-family-monospace);
+  }
+
+  /* ── article body typography ─────────────────────────────── */
+  article { line-height: 1.65; }
+  article p { margin: 0.85rem 0; }
+  article ul, article ol { padding-left: 1.5rem; }
+  article li { margin: 0.25rem 0; }
+  article a { font-weight: 500; }
+  article code:not(pre code) {
+    background: var(--pico-secondary-background);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  article pre {
+    padding: 0.85rem 1rem;
+    border-radius: var(--pico-border-radius);
+    font-size: 0.825rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    background: var(--pico-secondary-background);
+    border: 1px solid var(--pico-muted-border-color);
+  }
+  article pre.mermaid { background: transparent; border: none; padding: 0; text-align: center; }
+  article table { font-size: 0.875rem; margin: 1rem 0; }
+  article blockquote {
+    border-left: 3px solid var(--pico-muted-border-color);
+    padding-left: 1rem; color: var(--pico-muted-color); font-style: normal;
+  }
+  article figure { margin: 1.25rem 0; }
+  article figcaption { font-size: 0.825rem; color: var(--pico-muted-color); text-align: center; margin-top: 0.5rem; }
+
+  /* image zoom cursor */
+  .zoomable { cursor: zoom-in; }
+
+  /* ── meta strip (proposal / source) ──────────────────────── */
+  .meta-strip {
+    display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+    align-items: center;
+    font-size: 0.825rem; color: var(--pico-muted-color);
+    margin-bottom: 1.5rem;
+  }
+  .meta-strip .status {
+    background: var(--pico-primary-background); color: var(--pico-primary-inverse);
+    padding: 0.15rem 0.6rem; border-radius: 999px;
+    font-weight: 500; font-size: 0.75rem;
+  }
+
+  /* ── footer ──────────────────────────────────────────────── */
+  footer.bottom {
+    padding: 1.5rem 0; margin-top: 4rem;
+    border-top: 1px solid var(--pico-muted-border-color);
+    font-size: 0.75rem; color: var(--pico-muted-color); text-align: center;
+  }
+  footer.bottom a { color: var(--pico-muted-color); text-decoration: none; }
+  footer.bottom a:hover { color: var(--pico-primary); text-decoration: underline; }
+
+  /* ── KaTeX / highlight overrides ─────────────────────────── */
+  .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.5rem 0; }
+  .hljs { background: var(--pico-secondary-background) !important; padding: 0 !important; }
+</style>
+{%- block head_extra %}{% endblock %}
+</head>
+<body>
+
+<nav class="top">
+  <a href="{{ asset_root }}index.html" class="brand">{{ meta.get("title", "wiki") }}</a>
+  <div class="tags">
+    {%- for tag in meta.get("tags", []) %}
+    <span class="tag">{{ tag }}</span>
+    {%- endfor %}
+    <button class="theme-toggle" id="theme-toggle" title="toggle theme">◐</button>
+  </div>
+</nav>
+
+<nav class="breadcrumb" id="breadcrumb"></nav>
+
+<main>
+<!-- wah:meta
+{{ meta_yaml }}
+-->
+{% block main %}{% endblock %}
+</main>
+
+<footer class="bottom">
+  updated {{ meta.get("updated", "") }}
+  &nbsp;·&nbsp; template {{ meta.get("template", "") }}
+  &nbsp;·&nbsp; <a href="{{ asset_root }}index.html">index</a>
+</footer>
+
+<script>
+(function () {
+  // ── breadcrumb from URL path ───────────────────────────────
+  const el = document.getElementById('breadcrumb');
+  if (el) {
+    let path = decodeURIComponent(location.pathname);
+    let parts = path.split('/').filter(Boolean);
+    let last = parts[parts.length - 1] || '';
+    let hereLabel = '';
+    let dirParts = parts;
+    if (last.endsWith('.html')) {
+      hereLabel = last.replace(/\.html$/, '');
+      dirParts = parts.slice(0, -1);
+    }
+    if (last === '' || last === 'index.html') hereLabel = '';
+    const trail = ['<a href="/">~</a>'];
+    let accum = '';
+    dirParts.forEach(function (p) {
+      accum += '/' + encodeURIComponent(p);
+      trail.push('<a href="' + accum + '/">' + p + '</a>');
+    });
+    if (hereLabel) trail.push('<span class="here">' + hereLabel + '</span>');
+    el.innerHTML = trail.join('<span class="sep">/</span>');
+  }
+
+  // ── theme toggle (persisted) ───────────────────────────────
+  const root = document.documentElement;
+  const saved = localStorage.getItem('wah-theme');
+  if (saved) root.setAttribute('data-theme', saved);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.addEventListener('click', function () {
+    const next = (root.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('wah-theme', next);
+    // Re-init Mermaid with matching theme on toggle.
+    if (window.mermaid) {
+      window.mermaid.initialize({ startOnLoad: false, theme: next === 'dark' ? 'dark' : 'default' });
+      document.querySelectorAll('.mermaid').forEach(function (el) {
+        el.removeAttribute('data-processed');
+        el.innerHTML = el.dataset.src || el.textContent;
+      });
+      window.mermaid.run();
+    }
+  });
+
+  // ── lazy loaders ───────────────────────────────────────────
+  function loadScript(src, onload) {
+    const s = document.createElement('script');
+    s.src = src; s.onload = onload;
+    document.head.appendChild(s);
+  }
+  function loadCss(href) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = href;
+    document.head.appendChild(l);
+  }
+
+  // highlight.js for any <pre><code class="language-..."> or unknown <pre><code>
+  if (document.querySelector('pre code')) {
+    loadCss('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css');
+    loadScript('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js', function () {
+      window.hljs && window.hljs.highlightAll();
+    });
+  }
+
+  // Mermaid for <pre class="mermaid">
+  if (document.querySelector('pre.mermaid, code.mermaid, .mermaid')) {
+    document.querySelectorAll('.mermaid').forEach(function (el) { el.dataset.src = el.textContent; });
+    loadScript('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js', function () {
+      const theme = (root.getAttribute('data-theme') === 'dark') ? 'dark' : 'default';
+      window.mermaid.initialize({ startOnLoad: true, theme: theme, securityLevel: 'loose' });
+    });
+  }
+
+  // KaTeX for inline $...$ / display $$...$$ / .math
+  const looksLikeMath = /(\$[^$\n]+\$|\$\$[\s\S]+?\$\$)/.test(document.body.textContent || '');
+  if (looksLikeMath || document.querySelector('.math')) {
+    loadCss('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css');
+    loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', function () {
+      loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', function () {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true },
+          ],
+          throwOnError: false,
+        });
+      });
+    });
+  }
+
+  // Chart.js for <canvas data-chart="...">
+  if (document.querySelector('canvas[data-chart]')) {
+    loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js', function () {
+      document.querySelectorAll('canvas[data-chart]').forEach(function (canvas) {
+        try {
+          const config = JSON.parse(canvas.dataset.chart);
+          new window.Chart(canvas, config);
+        } catch (e) {
+          console.error('chart config parse failed', e, canvas);
+        }
+      });
+    });
+  }
+
+  // Image lightbox for .zoomable
+  if (document.querySelector('.zoomable')) {
+    loadCss('https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css');
+    loadScript('https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js', function () {
+      window.GLightbox({ selector: '.zoomable' });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

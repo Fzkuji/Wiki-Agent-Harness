@@ -1,0 +1,44 @@
+{#- description: Mermaid diagram with surrounding context. Slots: summary, diagram (Mermaid source inside <pre class="mermaid">), notes. -#}
+{% extends "base.html.j2" %}
+
+{% block main %}
+<article>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+
+  <p class="lede">
+    <!-- wah:slot id="summary" -->
+    <!-- /wah:slot -->
+  </p>
+
+  <figure>
+    <!-- wah:slot id="diagram" -->
+    <!-- e.g.
+      <pre class="mermaid">
+flowchart LR
+  A[teacher] --> B[student]
+  B --> C{eval}
+      </pre>
+    -->
+    <!-- /wah:slot -->
+    <figcaption>
+      <!-- wah:slot id="caption" -->
+      <!-- /wah:slot -->
+    </figcaption>
+  </figure>
+
+  <section>
+    <h2>Notes</h2>
+    <!-- wah:slot id="notes" -->
+    <!-- /wah:slot -->
+  </section>
+
+  {%- if meta.get("related") %}
+  <h2 class="section-label">Related</h2>
+  <div class="card-grid">
+    {%- for r in meta.get("related", []) %}
+    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</article>
+{% endblock %}
