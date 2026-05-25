@@ -2,45 +2,69 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<header>
+<section class="wah-hero">
+  <span class="eyebrow">folder</span>
   <h1>{{ meta.get("title", "Index") }}</h1>
-  <article>
+  <div class="prose prose-base max-w-none mt-2 text-base-content/80">
     <!-- wah:slot id="description" -->
     <!-- /wah:slot -->
-  </article>
-</header>
+  </div>
+</section>
 
 {%- set folders = children | selectattr("kind", "equalto", "folder") | list %}
 {%- set pages   = children | selectattr("kind", "equalto", "page") | list %}
 
 {%- if folders %}
-<h2 class="section-label">Folders · {{ folders | length }}</h2>
-<div class="card-grid">
-  {%- for c in folders %}
-  <a href="{{ c.href }}" class="card">
-    <h3><span class="icon">▸</span>{{ c.title }}</h3>
-    {%- if c.note %}<p>{{ c.note }}</p>{%- endif %}
-  </a>
-  {%- endfor %}
-</div>
+<section class="mb-10">
+  <div class="flex items-center gap-3 mb-4">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Folders</h2>
+    <span class="badge badge-ghost badge-sm">{{ folders | length }}</span>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {%- for c in folders %}
+    <a href="{{ c.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-lg hover:-translate-y-0.5 transition-all no-underline group">
+      <div class="card-body p-5">
+        <h3 class="card-title text-base m-0 group-hover:text-brand-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+          {{ c.title }}
+        </h3>
+        {%- if c.note %}<p class="text-sm text-base-content/60 line-clamp-2 m-0">{{ c.note }}</p>{%- endif %}
+      </div>
+    </a>
+    {%- endfor %}
+  </div>
+</section>
 {%- endif %}
 
 {%- if pages %}
-<h2 class="section-label">Pages · {{ pages | length }}</h2>
-<div class="page-list">
-  {%- for c in pages %}
-  <a href="{{ c.href }}" class="row-link">
-    <span><span class="icon">·</span><span class="title">{{ c.title }}</span></span>
-    <span class="meta">
-      {%- if c.template %}<span class="template">{{ c.template }}</span>{%- endif %}
-      {%- if c.updated %}<span>{{ c.updated }}</span>{%- endif %}
-    </span>
-  </a>
-  {%- endfor %}
-</div>
+<section class="mb-6">
+  <div class="flex items-center gap-3 mb-4">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Pages</h2>
+    <span class="badge badge-ghost badge-sm">{{ pages | length }}</span>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="flex flex-col gap-0.5">
+    {%- for c in pages %}
+    <a href="{{ c.href }}" class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors no-underline group">
+      <span class="flex items-center gap-2 min-w-0">
+        <span class="text-base-content/30 text-xs">·</span>
+        <span class="truncate text-sm text-base-content group-hover:text-brand-600 transition-colors">{{ c.title }}</span>
+      </span>
+      <span class="flex items-center gap-2 text-xs text-base-content/50 flex-shrink-0">
+        {%- if c.template %}<span class="font-mono text-[0.68rem] px-1.5 py-0.5 rounded bg-base-200 text-base-content/60">{{ c.template }}</span>{%- endif %}
+        {%- if c.updated %}<span>{{ c.updated }}</span>{%- endif %}
+      </span>
+    </a>
+    {%- endfor %}
+  </div>
+</section>
 {%- endif %}
 
 {%- if not folders and not pages %}
-<p style="color: var(--pico-muted-color); margin-top: 2rem;">empty folder</p>
+<div class="alert">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span>Empty folder.</span>
+</div>
 {%- endif %}
 {% endblock %}

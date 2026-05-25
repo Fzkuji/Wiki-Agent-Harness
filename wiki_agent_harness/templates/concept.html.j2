@@ -2,42 +2,58 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">concept</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <div class="callout">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+</section>
 
-  <section>
-    <h2>Detail</h2>
-    <!-- wah:slot id="body" -->
-    <!-- /wah:slot -->
-  </section>
+<article class="prose prose-base max-w-none">
+  <!-- wah:slot id="body" -->
+  <!-- /wah:slot -->
+</article>
 
-  <section>
-    <h2>Examples</h2>
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Examples</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="examples" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>Notes</h2>
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Notes</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="related_notes" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card">
-      <h3>{{ r.title }}</h3>
-      {%- if r.note %}<p>{{ r.note }}</p>{%- endif %}
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4">
+        <h3 class="card-title text-sm m-0">{{ r.title }}</h3>
+        {%- if r.note %}<p class="text-xs text-base-content/60 line-clamp-2 m-0">{{ r.note }}</p>{%- endif %}
+      </div>
     </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

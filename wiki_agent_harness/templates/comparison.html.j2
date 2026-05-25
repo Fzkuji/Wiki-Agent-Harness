@@ -2,33 +2,51 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">comparison</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <table>
-    <!-- wah:slot id="table" -->
-    <!-- fill with <thead><tr><th>X</th>...</tr></thead><tbody>... -->
-    <!-- /wah:slot -->
-  </table>
+<section class="mb-12">
+  <div class="overflow-x-auto rounded-xl border border-base-300">
+    <table class="table table-zebra m-0">
+      <!-- wah:slot id="table" -->
+      <!-- fill with <thead><tr><th>...</th></tr></thead><tbody><tr><td>...</td></tr></tbody> -->
+      <!-- /wah:slot -->
+    </table>
+  </div>
+</section>
 
-  <section>
-    <h2>Verdict</h2>
-    <!-- wah:slot id="verdict" -->
-    <!-- /wah:slot -->
-  </section>
+<section class="mb-12">
+  <div class="alert alert-success bg-success/10 border border-success/30 text-base-content">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <div>
+      <div class="font-semibold text-sm mb-1">Verdict</div>
+      <div class="prose prose-sm max-w-none">
+        <!-- wah:slot id="verdict" -->
+        <!-- /wah:slot -->
+      </div>
+    </div>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

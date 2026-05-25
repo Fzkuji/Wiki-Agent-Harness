@@ -2,26 +2,33 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<header style="text-align: center; padding: 2.5rem 0 2rem 0;">
-  <h1 style="font-size: 2.75rem; margin-bottom: 0.75rem;">{{ meta.get("title", "Untitled") }}</h1>
-  <p class="lede" style="text-align: center; max-width: 560px; margin: 0 auto;">
+<section class="wah-hero text-center md:text-left">
+  <span class="eyebrow">{{ (meta.get("tags", []) | first) if meta.get("tags") else "overview" }}</span>
+  <h1>{{ meta.get("title", "Untitled") }}</h1>
+  <p class="lede">
     <!-- wah:slot id="tagline" -->
     <!-- /wah:slot -->
   </p>
-</header>
+</section>
 
-<article>
+<article class="prose prose-base max-w-none mb-12">
   <!-- wah:slot id="body" -->
   <!-- /wah:slot -->
 </article>
 
 <section>
-  <div class="card-grid">
+  <div class="text-[0.72rem] font-bold uppercase tracking-widest text-brand-600 mb-4 flex items-center gap-2">
+    <span>Highlights</span>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <!-- wah:slot id="highlights" -->
     <!-- fill cards like:
-      <a href="..." class="card">
-        <h3>Title</h3>
-        <p>Description.</p>
+      <a href="..." class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-lg hover:-translate-y-0.5 transition-all no-underline">
+        <div class="card-body p-5">
+          <h3 class="card-title text-base">▸ Title</h3>
+          <p class="text-sm text-base-content/70">Short blurb.</p>
+        </div>
       </a>
     -->
     <!-- /wah:slot -->

@@ -1,16 +1,18 @@
-{#- description: Mermaid diagram with surrounding context. Slots: summary, diagram (Mermaid source inside <pre class="mermaid">), notes. -#}
+{#- description: Mermaid diagram with surrounding context. Slots: summary, diagram (Mermaid source inside <pre class="mermaid">), notes, caption. -#}
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">diagram</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <figure>
+<figure class="card bg-base-100 border border-base-300 mb-8 overflow-hidden">
+  <div class="card-body p-6 md:p-10 flex items-center justify-center bg-base-200/30">
     <!-- wah:slot id="diagram" -->
     <!-- e.g.
       <pre class="mermaid">
@@ -20,25 +22,37 @@ flowchart LR
       </pre>
     -->
     <!-- /wah:slot -->
-    <figcaption>
-      <!-- wah:slot id="caption" -->
-      <!-- /wah:slot -->
-    </figcaption>
-  </figure>
+  </div>
+  <figcaption class="px-6 py-3 border-t border-base-300 text-xs text-base-content/60 text-center bg-base-200/50">
+    <!-- wah:slot id="caption" -->
+    <!-- /wah:slot -->
+  </figcaption>
+</figure>
 
-  <section>
-    <h2>Notes</h2>
+<section class="mt-10">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Notes</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="notes" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

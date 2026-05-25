@@ -1,54 +1,88 @@
-{#- description: results / metrics dashboard. Slots: summary, stats (a .stat-grid), charts (<canvas data-chart=…>), table, takeaways. -#}
+{#- description: results / metrics dashboard. Slots: summary, stats (daisyUI .stats), charts (<canvas data-chart=…>), table, takeaways. -#}
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">dashboard</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <section>
-    <!-- wah:slot id="stats" -->
-    <!-- e.g.
-      <div class="stat-grid">
-        <div class="stat"><span class="num">68.4<span class="unit">%</span></span><span class="label">baseline EM</span></div>
-        <div class="stat"><span class="num">87.6<span class="unit">%</span></span><span class="label">after fix</span><span class="delta up">+19.2</span></div>
+<section class="mb-10">
+  <!-- wah:slot id="stats" -->
+  <!-- e.g. daisyUI stats:
+    <div class="stats stats-vertical sm:stats-horizontal shadow w-full bg-base-100 border border-base-300">
+      <div class="stat">
+        <div class="stat-figure text-brand-500"><svg ...></svg></div>
+        <div class="stat-title">baseline EM</div>
+        <div class="stat-value text-brand-600">68.4%</div>
+        <div class="stat-desc">Qwen3-1.7B · AIME24</div>
       </div>
-    -->
-    <!-- /wah:slot -->
-  </section>
+      <div class="stat">
+        <div class="stat-title">after fix</div>
+        <div class="stat-value text-success">87.6%</div>
+        <div class="stat-desc text-success">↗︎ +19.2pp</div>
+      </div>
+    </div>
+  -->
+  <!-- /wah:slot -->
+</section>
 
-  <section>
-    <h2>Charts</h2>
-    <!-- wah:slot id="charts" -->
-    <!-- e.g.
-      <canvas data-chart='{"type":"bar","data":{"labels":["A","B","C"],"datasets":[{"label":"score","data":[12,19,7]}]}}' style="max-width: 600px;"></canvas>
-    -->
-    <!-- /wah:slot -->
-  </section>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Charts</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="card bg-base-100 border border-base-300">
+    <div class="card-body p-6">
+      <!-- wah:slot id="charts" -->
+      <!-- e.g. <canvas data-chart='{"type":"bar",...}' style="max-width:700px;"></canvas> -->
+      <!-- /wah:slot -->
+    </div>
+  </div>
+</section>
 
-  <section>
-    <h2>Detail</h2>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Detail</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="overflow-x-auto rounded-xl border border-base-300">
     <!-- wah:slot id="table" -->
+    <!-- e.g. <table class="table table-zebra m-0"><thead>…</thead><tbody>…</tbody></table> -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>Takeaways</h2>
-    <!-- wah:slot id="takeaways" -->
-    <!-- /wah:slot -->
-  </section>
+<section class="mb-12">
+  <div class="alert bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-700">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <div>
+      <div class="font-semibold text-sm mb-1">Takeaways</div>
+      <div class="prose prose-sm max-w-none">
+        <!-- wah:slot id="takeaways" -->
+        <!-- /wah:slot -->
+      </div>
+    </div>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

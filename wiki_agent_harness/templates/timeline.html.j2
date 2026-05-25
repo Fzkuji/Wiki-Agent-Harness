@@ -2,40 +2,59 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">timeline</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <section>
-    <div class="timeline">
-      <!-- wah:slot id="events" -->
-      <!-- e.g.
-        <div class="timeline-item">
-          <div class="when">2026-05-17</div>
-          <div class="what"><strong>Pilot run</strong> — Qwen3-1.7B, AIME24, OPSD reproduced 68.4% EM.</div>
+<section class="mb-12">
+  <ul class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+    <!-- wah:slot id="events" -->
+    <!-- fill as daisyUI timeline items, e.g.:
+      <li>
+        <div class="timeline-middle">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-brand-500"><circle cx="10" cy="10" r="6"/></svg>
         </div>
-      -->
-      <!-- /wah:slot -->
-    </div>
-  </section>
+        <div class="timeline-start mb-6 md:text-end">
+          <time class="font-mono italic text-sm text-brand-600">2026-05-13</time>
+          <div class="text-base font-semibold">Pilot run</div>
+          <div class="text-sm text-base-content/70">Qwen3-1.7B · OPSD baseline reproduced (68.4% EM).</div>
+        </div>
+        <hr/>
+      </li>
+    -->
+    <!-- /wah:slot -->
+  </ul>
+</section>
 
-  <section>
-    <h2>Notes</h2>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Notes</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="notes" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

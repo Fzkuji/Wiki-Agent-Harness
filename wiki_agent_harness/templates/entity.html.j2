@@ -2,41 +2,59 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">{{ (meta.get("tags", []) | first) if meta.get("tags") else "entity" }}</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <table>
-    <tbody>
-      <!-- wah:slot id="attributes" -->
-      <!-- fill rows like: <tr><th scope="row">Role</th><td>...</td></tr> -->
-      <!-- /wah:slot -->
-    </tbody>
-  </table>
-
-  <section>
-    <h2>Description</h2>
+<div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+  <article class="prose prose-base max-w-none">
     <!-- wah:slot id="description" -->
     <!-- /wah:slot -->
-  </section>
+  </article>
 
-  <section>
-    <h2>Notes</h2>
+  <aside class="lg:sticky lg:top-24 lg:self-start">
+    <div class="card bg-base-200 border border-base-300">
+      <div class="card-body p-5">
+        <div class="text-[0.7rem] font-bold uppercase tracking-widest text-brand-600 mb-3">Attributes</div>
+        <dl class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-2 text-sm">
+          <!-- wah:slot id="attributes" -->
+          <!-- fill as <dt class="text-base-content/60 font-medium">Label</dt><dd class="text-base-content m-0">value</dd> pairs -->
+          <!-- /wah:slot -->
+        </dl>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Notes</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="related_notes" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

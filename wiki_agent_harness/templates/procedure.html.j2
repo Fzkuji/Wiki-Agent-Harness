@@ -2,42 +2,75 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
+<section class="wah-hero">
+  <span class="eyebrow">how-to</span>
   <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <p class="lede">
+  <div class="lede mt-2">
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
-  </p>
+  </div>
+</section>
 
-  <section>
-    <h2>Prerequisites</h2>
-    <!-- wah:slot id="prerequisites" -->
+<section class="mb-10">
+  <div class="alert bg-base-200 border border-base-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <div>
+      <div class="font-semibold text-sm mb-1">Before you start</div>
+      <div class="prose prose-sm max-w-none text-base-content/80">
+        <!-- wah:slot id="prerequisites" -->
+        <!-- /wah:slot -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Steps</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="space-y-4">
+    <!-- wah:slot id="steps" -->
+    <!-- fill each step as:
+      <div class="card bg-base-100 border border-base-300">
+        <div class="card-body p-5 flex-row gap-4 items-start">
+          <div class="badge badge-primary badge-lg font-bold">1</div>
+          <div class="flex-1 prose prose-base max-w-none">
+            <h3 class="m-0 text-base">Step title</h3>
+            <p>Body.</p>
+            <pre><code class="language-bash">cmd</code></pre>
+          </div>
+        </div>
+      </div>
+    -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>Steps</h2>
-    <ol>
-      <!-- wah:slot id="steps" -->
-      <!-- fill: <li><strong>title</strong><br>detail.</li> -->
-      <!-- /wah:slot -->
-    </ol>
-  </section>
-
-  <section>
-    <h2>Pitfalls</h2>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-warning m-0">Pitfalls</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="pitfalls" -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}

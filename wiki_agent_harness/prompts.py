@@ -162,14 +162,46 @@ then call ``rebuild_folder_index`` on affected folders.
 
 {component_palette}
 
+## Visual discipline — this is a WEBSITE not a markdown dump
+
+The base shell loads Tailwind CSS + daisyUI v5 via CDN. That means:
+
+  - You have ~60 daisyUI components ready to use (hero, stats, steps,
+    timeline, card, alert, collapse, tabs, table, badge, mockup-browser,
+    mockup-code, …) plus the full Tailwind atomic-class system.
+  - You can copy ANY Tailwind snippet from the open web (shadcn/ui,
+    Vercel templates, Flowbite, Preline, HyperUI, Tailblocks, bento.dev,
+    tailwindui.com free sections, daisyui.com/components, …) directly
+    into a slot and it will render.
+
+A page that is mostly `<p>` and `<ul>` is a FAILURE. You are not
+porting markdown — you are building a webpage. Every page should look
+like something that would be at home on a modern Tailwind-built docs
+site (Stripe docs, Linear changelog, Vercel docs, Astro docs).
+
+Concrete patterns that should be near-automatic:
+  - numeric facts        → daisyUI `stats` band
+  - 3-8 step procedure   → daisyUI `steps`
+  - chronology           → daisyUI `timeline`
+  - 2-12 child links     → card-grid of `.card` (or bento grid for hero items)
+  - critical aside       → `alert alert-{info|warning|success|error}`
+  - deep-dive            → `collapse collapse-arrow` (accordion)
+  - same content N ways  → `tabs tabs-lifted`
+  - entity facts panel   → `dl` sidebar inside split layout
+  - UI screenshot        → `mockup-browser`
+  - terminal demo        → `mockup-code`
+  - 3+ entity relations  → mermaid flowchart
+  - numeric series       → Chart.js canvas
+
 ## Workflow
 
 For each cluster of related items in the analysis:
 
   1. WRITE 2-3 PAGES — pick template, place in folder, fill slots.
      **Slots are HTML; default to the visual components above, not
-     paragraphs.** A page that's only <p>/<ul> is a failure case.
-     Stack components: stat-grid → mermaid → card-grid → callout, etc.
+     paragraphs.** A page that's only <p>/<ul> is the failure case.
+     Stack components: hero (auto) → stats → mermaid → bento grid →
+     callout → collapse for derivations, etc.
 
   2. TIDY THE FOLDERS YOU JUST TOUCHED.
      - Empty folder ``description`` slot → write one short paragraph.
@@ -256,22 +288,36 @@ the slot using the harness ``write_slot`` action via your file tools
 (edit the file in place, replacing the content between the slot's
 ``<!-- wah:slot id="X" --> ... <!-- /wah:slot -->`` markers).
 
+The base shell loads Tailwind CSS + daisyUI via CDN — you have the
+full Tailwind atomic-class system plus daisyUI's component library.
+You may also paste any Tailwind snippet from anywhere on the web
+(shadcn/ui, Vercel templates, Flowbite, Preline, HyperUI, Tailblocks,
+bento.dev, tailwindui.com, daisyui.com/components) directly into a slot.
+
 Concrete heuristics:
-  - lists of numeric facts → stat-grid
-  - 2-8 cross-links / subtopics → card-grid
-  - decision flows / architecture → mermaid flowchart
-  - chronological events / project log → timeline
-  - key-value attribute dumps → kv list
-  - benchmark / comparison numbers → chart (Chart.js)
-  - critical aside or cross-reference → callout (info / warn)
-  - explanation prose → keep as ``<p>`` — don't force visuals where they
-    don't help
+  - lists of numeric facts          → daisyUI `stats` band
+  - 2-12 cross-links / subtopics    → card-grid of `.card` (or bento grid)
+  - decision flows / architecture   → mermaid flowchart
+  - chronological events            → daisyUI `timeline`
+  - numbered procedure              → daisyUI `steps`
+  - key-value attribute dumps       → `<dl>` definition list (sidebar pattern)
+  - benchmark / comparison numbers  → Chart.js + daisyUI `table` in `.overflow-x-auto`
+  - critical aside / cross-ref      → `alert alert-{info|warning|success|error}`
+  - optional deep-dive              → `collapse collapse-arrow` (accordion)
+  - multi-angle same content        → `tabs tabs-lifted`
+  - UI screenshot                   → `mockup-browser`
+  - terminal demo                   → `mockup-code`
+  - explanation prose               → keep as `<p>` inside a `.prose` block
 
 Constraints:
   - Preserve all factual content; never invent numbers, dates, or claims.
   - Preserve all existing links (just relocate them into the new layout).
-  - Use only the components shown in the palette above; do not invent
-    new CSS classes.
+  - Use Tailwind utility classes + daisyUI components; do NOT invent
+    new bespoke CSS class names (they won't have styling). Anything
+    Tailwind-prefixed (e.g. `bg-base-200`, `grid grid-cols-3`) works.
+  - Use theme-aware tokens (`bg-base-100`, `text-base-content`,
+    `border-base-300`) — not hardcoded `bg-white` / `text-gray-900`,
+    which break dark mode.
   - Don't change template, meta block, or slot ids.
   - If a slot is already visually rich, leave it alone.
 

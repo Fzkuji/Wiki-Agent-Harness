@@ -2,46 +2,74 @@
 {% extends "base.html.j2" %}
 
 {% block main %}
-<article>
-  <h1>{{ meta.get("title", "Untitled") }}</h1>
-
-  <div class="meta-strip">
+<section class="wah-hero">
+  <div class="flex items-start justify-between flex-wrap gap-4">
+    <div class="flex-1 min-w-0">
+      <span class="eyebrow">source · {{ (meta.get("tags", []) | first) if meta.get("tags") else "reference" }}</span>
+      <h1>{{ meta.get("title", "Untitled") }}</h1>
+    </div>
     {%- if meta.get("url") %}
-    <a href="{{ meta.url }}" target="_blank" rel="noopener">↗ {{ meta.url }}</a>
+    <a href="{{ meta.url }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm gap-2 no-underline">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Open
+    </a>
     {%- endif %}
-    <span class="status" style="font-family: var(--pico-font-family-monospace);">source</span>
   </div>
-
-  <div class="callout">
+  <div class="mt-4 prose prose-sm max-w-none text-base-content/80 not-italic">
     <!-- wah:slot id="citation" -->
     <!-- /wah:slot -->
   </div>
+</section>
 
-  <section>
-    <h2>Abstract</h2>
-    <!-- wah:slot id="abstract" -->
-    <!-- /wah:slot -->
-  </section>
+<section class="mb-10">
+  <div class="card bg-base-200 border border-base-300">
+    <div class="card-body p-5">
+      <div class="text-[0.7rem] font-bold uppercase tracking-widest text-brand-600 mb-2">Abstract</div>
+      <div class="prose prose-base max-w-none m-0">
+        <!-- wah:slot id="abstract" -->
+        <!-- /wah:slot -->
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section>
-    <h2>Key points</h2>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Key points</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="key_points" -->
+    <!-- fill as bulleted list or grid of cards -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>Excerpts</h2>
+<section class="mb-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Excerpts</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="prose prose-base max-w-none">
     <!-- wah:slot id="excerpts" -->
+    <!-- fill as <blockquote> elements -->
     <!-- /wah:slot -->
-  </section>
+  </div>
+</section>
 
-  {%- if meta.get("related") %}
-  <h2 class="section-label">Related</h2>
-  <div class="card-grid">
+{%- if meta.get("related") %}
+<section class="mt-12">
+  <div class="flex items-center gap-3 mb-5">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 m-0">Related</h2>
+    <span class="flex-1 h-px bg-gradient-to-r from-base-300 to-transparent"></span>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {%- for r in meta.get("related", []) %}
-    <a href="{{ r.href }}" class="card"><h3>{{ r.title }}</h3></a>
+    <a href="{{ r.href }}" class="card bg-base-100 border border-base-300 hover:border-brand-400 hover:shadow-md transition-all no-underline">
+      <div class="card-body p-4"><h3 class="card-title text-sm m-0">{{ r.title }}</h3></div>
+    </a>
     {%- endfor %}
   </div>
-  {%- endif %}
-</article>
+</section>
+{%- endif %}
 {% endblock %}
