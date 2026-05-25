@@ -1,5 +1,6 @@
 {#- description: chronological log of events (project diary, paper revision history, lit-review timeline). Slots: summary, events, notes. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <section class="mb-12">

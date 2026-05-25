@@ -1,5 +1,6 @@
 {#- description: external reference (paper, article, talk, dataset). Slots: citation, abstract, key_points, excerpts. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -19,6 +20,7 @@
     <!-- wah:slot id="citation" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <section class="mb-10">

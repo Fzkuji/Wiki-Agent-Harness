@@ -1,0 +1,26 @@
+{#- Reusable Jinja2 macros shared across page templates. -#}
+
+{#- Hero metadata strip: small row of chips for tags + updated date.
+    Renders nothing if meta has no relevant fields. Place at the bottom
+    of a .wah-hero just below the lede. -#}
+{% macro hero_meta(meta) -%}
+{%- set tags = meta.get("tags") or [] -%}
+{%- set updated = meta.get("updated") or "" -%}
+{%- set status = meta.get("status") or "" -%}
+{%- if tags or updated or status -%}
+<div class="flex flex-wrap items-center gap-2 mt-5 text-xs">
+  {%- if status -%}
+  <span class="badge badge-primary badge-sm">{{ status }}</span>
+  {%- endif -%}
+  {%- for tag in tags -%}
+  <span class="badge badge-ghost badge-sm">{{ tag }}</span>
+  {%- endfor -%}
+  {%- if updated -%}
+  <span class="text-base-content/50 inline-flex items-center gap-1 ml-auto">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    updated {{ updated }}
+  </span>
+  {%- endif -%}
+</div>
+{%- endif -%}
+{%- endmacro %}

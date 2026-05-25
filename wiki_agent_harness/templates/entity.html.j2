@@ -1,5 +1,6 @@
 {#- description: named thing (person, project, product, dataset, paper). Slots: summary, attributes, description, related_notes. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">

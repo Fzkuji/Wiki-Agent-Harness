@@ -1,5 +1,6 @@
 {#- description: Mermaid diagram with surrounding context. Slots: summary, diagram (Mermaid source inside <pre class="mermaid">), notes, caption. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <figure class="card bg-base-100 border border-base-300 mb-8 overflow-hidden">

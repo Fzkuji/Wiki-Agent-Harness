@@ -1,5 +1,6 @@
 {#- description: results / metrics dashboard. Slots: summary, stats (daisyUI .stats), charts (<canvas data-chart=…>), table, takeaways. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <section class="mb-10">

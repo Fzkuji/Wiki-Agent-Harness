@@ -205,11 +205,27 @@ def rebuild_folder_index(
                 except Exception:
                     pass
             note = _card_snippet(sub_desc or sub_meta.get("description") or "")
+            # Count direct content pages + subfolders so the card can show
+            # "5 pages · 2 folders" at a glance.
+            n_pages = 0
+            n_subfolders = 0
+            try:
+                for sub in entry.iterdir():
+                    if sub.name.startswith(".") or sub.name.startswith("_"):
+                        continue
+                    if sub.is_dir():
+                        n_subfolders += 1
+                    elif sub.suffix == store.PAGE_SUFFIX and sub.name != store.FOLDER_INDEX:
+                        n_pages += 1
+            except OSError:
+                pass
             children.append({
                 "kind": "folder",
                 "title": sub_meta.get("title") or entry.name,
                 "href": f"{entry.name}/{store.FOLDER_INDEX}",
                 "note": note,
+                "n_pages": n_pages,
+                "n_subfolders": n_subfolders,
             })
         elif entry.suffix == store.PAGE_SUFFIX and entry.name != store.FOLDER_INDEX:
             try:

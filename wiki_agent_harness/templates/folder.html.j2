@@ -1,5 +1,6 @@
 {#- description: auto-generated folder index (README.html). Lists pages and subfolders. Re-rendered automatically; do not edit by hand. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="description" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 {%- set folders = children | selectattr("kind", "equalto", "folder") | list %}
@@ -30,6 +32,12 @@
           {{ c.title }}
         </h3>
         {%- if c.note %}<p class="text-sm text-base-content/60 line-clamp-2 m-0">{{ c.note }}</p>{%- endif %}
+        {%- if c.n_pages or c.n_subfolders %}
+        <div class="card-actions justify-start mt-2 flex-wrap gap-1">
+          {%- if c.n_pages %}<span class="badge badge-ghost badge-sm font-mono">{{ c.n_pages }} page{% if c.n_pages != 1 %}s{% endif %}</span>{%- endif %}
+          {%- if c.n_subfolders %}<span class="badge badge-ghost badge-sm font-mono">{{ c.n_subfolders }} folder{% if c.n_subfolders != 1 %}s{% endif %}</span>{%- endif %}
+        </div>
+        {%- endif %}
       </div>
     </a>
     {%- endfor %}

@@ -1,5 +1,6 @@
 {#- description: explanation page. Slots: summary, body, examples, related_notes. Use for abstract ideas, definitions, techniques. -#}
 {% extends "base.html.j2" %}
+{% from "_macros.html.j2" import hero_meta %}
 
 {% block main %}
 <section class="wah-hero">
@@ -9,6 +10,7 @@
     <!-- wah:slot id="summary" -->
     <!-- /wah:slot -->
   </div>
+  {{ hero_meta(meta) }}
 </section>
 
 <article class="prose prose-base max-w-none">
