@@ -255,6 +255,22 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
     transition: width 0.1s;
   }
 
+  /* Back-to-top floating button */
+  #wah-top {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border: none; cursor: pointer;
+    box-shadow: 0 6px 20px -4px rgba(99, 102, 241, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    z-index: 55;
+  }
+  #wah-top.visible { opacity: 1; pointer-events: auto; transform: none; }
+  #wah-top:hover { box-shadow: 0 10px 28px -4px rgba(99, 102, 241, 0.7); }
+
   /* Copy button on <pre> blocks */
   .wah-copy {
     position: absolute; top: 0.5rem; right: 0.5rem;
@@ -485,6 +501,9 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
 <body class="min-h-screen animate-fade-in">
 
 <div id="wah-progress"></div>
+<button id="wah-top" type="button" title="back to top" aria-label="back to top">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
 
 <!-- Top nav (daisyUI navbar) -->
 <header class="sticky top-0 z-50 backdrop-blur-md bg-base-100/70 border-b border-base-200">
@@ -612,17 +631,23 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
     }
   }
 
-  // ── reading progress bar ──────────────────────────────────────
+  // ── reading progress bar + back-to-top toggle ────────────────
   const pg = document.getElementById('wah-progress');
-  if (pg) {
+  const topBtn = document.getElementById('wah-top');
+  if (pg || topBtn) {
     const onScroll = () => {
       const h = document.documentElement;
       const total = h.scrollHeight - h.clientHeight;
-      pg.style.width = total > 0 ? (h.scrollTop / total * 100) + '%' : '0%';
+      const ratio = total > 0 ? h.scrollTop / total : 0;
+      if (pg) pg.style.width = (ratio * 100) + '%';
+      if (topBtn) topBtn.classList.toggle('visible', h.scrollTop > 400);
     };
     document.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   }
+  if (topBtn) topBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   // ── lazy loaders ──────────────────────────────────────────────
   function loadScript(src, onload) { const s = document.createElement('script'); s.src = src; s.onload = onload; document.head.appendChild(s); }
