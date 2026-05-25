@@ -3,7 +3,7 @@
 Three layers:
   1. Templates (Jinja2 + Tailwind/DaisyUI CDN) define page shells and slots.
   2. Agent fills slots; never writes raw HTML by hand.
-  3. Folder ``index.html`` indexes are auto-generated.
+  3. Folder ``README.html`` indexes are auto-generated.
 
 Example::
 

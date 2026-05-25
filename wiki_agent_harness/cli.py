@@ -281,11 +281,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.set_defaults(func=cmd_set_meta)
 
     # Folder index ------------------------------------------------------
-    sp = sub.add_parser("rebuild", help="regenerate one folder's index.html")
+    sp = sub.add_parser("rebuild", help="regenerate one folder's README.html")
     sp.add_argument("folder", nargs="?", help="vault-relative; omit for root")
     sp.set_defaults(func=cmd_rebuild)
 
-    sp = sub.add_parser("rebuild-all", help="regenerate every folder's index.html")
+    sp = sub.add_parser("rebuild-all", help="regenerate every folder's README.html")
     sp.set_defaults(func=cmd_rebuild_all)
 
     sp = sub.add_parser("rerender-all",

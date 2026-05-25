@@ -3,7 +3,7 @@
 Override the default vault root with the ``WAH_VAULT`` environment variable,
 or pass ``root=`` to :class:`Wiki`.
 
-A vault is a folder tree of ``.html`` pages plus one ``index.html`` index
+A vault is a folder tree of ``.html`` pages plus one ``README.html`` index
 per folder. State (search index, review queue) lives in a sibling ``.state``
 directory so the vault itself stays a clean publishable static site.
 """
@@ -15,9 +15,9 @@ from typing import Iterable
 
 #: Per-folder index page name. There is at most one per folder; never iterated
 #: as content.
-#: Per-folder index page name. ``index.html`` so browsers auto-serve it when
+#: Per-folder index page name. ``README.html`` so browsers auto-serve it when
 #: the user opens a folder URL.
-FOLDER_INDEX = "index.html"
+FOLDER_INDEX = "README.html"
 
 #: File suffix used for content pages.
 PAGE_SUFFIX = ".html"

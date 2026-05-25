@@ -1,6 +1,6 @@
 """Page-level read / find / iterate API.
 
-Pages are ``.html`` files; each folder has at most one ``index.html``
+Pages are ``.html`` files; each folder has at most one ``README.html``
 auto-generated index.
 """
 from __future__ import annotations

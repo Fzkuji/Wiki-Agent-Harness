@@ -128,7 +128,7 @@ class Renderer:
         *,
         depth: int = 0,
     ) -> str:
-        """Render a folder's index.html from the ``folder`` template."""
+        """Render a folder's README.html from the ``folder`` template."""
         info = self.find_template("folder")
         if info is None:
             raise ValueError("built-in template 'folder' is missing")

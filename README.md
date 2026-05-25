@@ -43,7 +43,7 @@ This harness sits in between:
 - **Slots** are HTML-comment-delimited regions inside each page. Agents
   edit one slot at a time across many sessions without rewriting the
   rest of the page — successive ingests accumulate cleanly.
-- **Folder `index.html`** indexes are auto-generated from each folder's
+- **Folder `README.html`** indexes are auto-generated from each folder's
   current contents. No hand-curated table of contents.
 - **Generic ingest pipeline** with overridable prompts: a downstream
   project (paper survey, memory store, CRM, bug tracker, …) specialises
@@ -85,7 +85,7 @@ for hit in w.search("attention"):
     print(hit.score, hit.path)
 ```
 
-Open `~/my-vault/index.html` in a browser — that's the auto-generated
+Open `~/my-vault/README.html` in a browser — that's the auto-generated
 landing page.
 
 ## Quick start (CLI)
@@ -216,7 +216,7 @@ agent uses ordinary tools for the rest:
 | Create a new page | `Wiki.new_page` (template → HTML shell) |
 | Fill / edit content | `Wiki.write_slot`, `Wiki.append_slot` |
 | Update metadata | `Wiki.set_meta` |
-| Write a folder's human-written description | `Wiki.write_slot(folder/index.html, "description", ...)` |
+| Write a folder's human-written description | `Wiki.write_slot(folder/README.html, "description", ...)` |
 | Rename / move a page | `mv old.html new.html`, then `grep -rn 'href=".*old' .` and fix each match, then `rebuild_folder_index` on old + new parents |
 | Delete a page | `rm page.html`, then fix dangling hrefs, then `rebuild_folder_index` |
 | Spot housekeeping problems | `Wiki.lint()` — flags crowded folders (>7 direct pages), empty descriptions, broken hrefs, empty folders |
@@ -320,8 +320,8 @@ Wiki(
 | `write_slot(target, slot_id, content)` | overwrite a slot |
 | `append_slot(target, slot_id, content)` | append to a slot |
 | `set_meta(target, updates)` | merge into the meta block |
-| `rebuild_folder_index(folder=None)` | regenerate one folder's `index.html` (preserves its `description` slot) |
-| `rebuild_all_folder_indexes()` | regenerate every folder's `index.html` |
+| `rebuild_folder_index(folder=None)` | regenerate one folder's `README.html` (preserves its `description` slot) |
+| `rebuild_all_folder_indexes()` | regenerate every folder's `README.html` |
 
 #### Search
 
@@ -392,8 +392,8 @@ wah set-meta TARGET KEY=VAL [KEY=VAL ...]
 ### Folder index
 
 ```
-wah rebuild [FOLDER]          # regenerate one folder's index.html
-wah rebuild-all               # regenerate every folder's index.html
+wah rebuild [FOLDER]          # regenerate one folder's README.html
+wah rebuild-all               # regenerate every folder's README.html
 ```
 
 ### Search

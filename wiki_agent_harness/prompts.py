@@ -25,7 +25,7 @@ For each piece of durable knowledge in the source, list:
 Then add a final ``Folder housekeeping`` section listing concrete tidy
 actions the writer should perform after the content updates:
 
-  - folders whose ``index.html`` ``description`` slot is empty and should
+  - folders whose ``README.html`` ``description`` slot is empty and should
     be filled
   - folders that now contain too many siblings and should be split into
     subtopic folders
@@ -105,7 +105,7 @@ Use the harness primitives instead of hand-writing HTML:
   - ``append_slot(page, slot_id, html)`` — append to a slot.
   - ``set_meta(page, updates)`` — merge into the meta block.
   - ``rebuild_folder_index(folder)`` — re-render a folder's
-    ``index.html`` (auto-runs after ``new_page``; call manually after
+    ``README.html`` (auto-runs after ``new_page``; call manually after
     any reorganisation done with shell tools).
 
 Everything else is a standard file operation; just use ordinary
@@ -124,7 +124,7 @@ Everything else is a standard file operation; just use ordinary
 The harness deliberately does NOT wrap rm/mv/grep in custom primitives.
 Use the tools you already have.
 
-The folder-level ``index.html`` itself is a regular page using the
+The folder-level ``README.html`` itself is a regular page using the
 ``folder`` template. Its child-list is auto-generated. Its
 ``description`` slot is for you to write — a short paragraph explaining
 what lives in this folder and why. Other slots (e.g. ``description``)
@@ -150,7 +150,7 @@ For each cluster of related items in the analysis below, repeat:
        page's meta ``related`` list.
 
   2. TIDY THE FOLDERS YOU JUST TOUCHED.
-     - For each folder you wrote into, read its ``index.html``. If its
+     - For each folder you wrote into, read its ``README.html``. If its
        ``description`` slot is empty, write one short paragraph
        describing what this folder is for. If the existing description
        is out of date given the new pages, revise it.

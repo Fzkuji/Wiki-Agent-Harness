@@ -90,7 +90,7 @@ def test_new_page_in_subfolder(vault):
     assert p.exists()
     assert p.parent == vault / "area" / "topic"
     # Folder index auto-generated.
-    assert (vault / "area" / "topic" / "index.html").exists()
+    assert (vault / "area" / "topic" / "README.html").exists()
 
 
 def test_new_page_rejects_duplicate(vault):
@@ -107,7 +107,7 @@ def test_folder_index_lists_pages(vault):
     w = Wiki(root=vault)
     w.new_page("a", template="concept", meta={"title": "Aye"})
     w.new_page("b", template="entity", meta={"title": "Bee"})
-    readme = vault / "index.html"
+    readme = vault / "README.html"
     assert readme.exists()
     text = readme.read_text(encoding="utf-8")
     assert "Aye" in text
@@ -169,7 +169,7 @@ def test_folder_description_survives_rebuild(vault):
     when a new sibling page is added (which triggers index rebuild)."""
     w = Wiki(root=vault)
     w.new_page("topic/first", template="concept", meta={"title": "First"})
-    readme = vault / "topic" / "index.html"
+    readme = vault / "topic" / "README.html"
     w.write_slot(readme, "description", "Notes on topic X.")
     assert w.slot(readme, "description") == "Notes on topic X."
     # New sibling should trigger a rebuild but preserve description.
