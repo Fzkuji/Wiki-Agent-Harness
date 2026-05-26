@@ -212,6 +212,17 @@ For each cluster of related items in the analysis:
      - 7-10 direct pages → start thinking about subfolder splits.
      - Near-duplicates → merge then delete.
      - Stale pages superseded by new material → ``rm`` + clean hrefs.
+     - **Reachability rule: every new page MUST be referenced (via
+       ``<a href>``) from at least one of:
+         (a) the parent folder README's ``description`` slot,
+         (b) an ancestor folder README's ``description`` slot, or
+         (c) another content page's body.
+       Being auto-listed in the parent's PAGES section is NOT enough
+       — that just means the reader can find it AFTER they drilled
+       into the folder. A page nobody writes about from above is a
+       page that's in the wrong place. `wah lint` flags these as
+       "buried pages"; fix by linking from above OR moving the page
+       to where it's actually used.**
 
   3. REPEAT with the next cluster.
 

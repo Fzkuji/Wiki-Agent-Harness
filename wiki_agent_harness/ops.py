@@ -430,6 +430,57 @@ def lint(vault_root: Path, *, renderer: Renderer) -> str:
             if not target.exists():
                 broken_links.append((rel, href))
 
+    # ── Reachability check ───────────────────────────────────────────
+    # A page is "buried" if the only inbound reference is the auto-
+    # generated PAGES list in its own folder's README (i.e. nobody
+    # writes about it anywhere). Such pages are reachable only by
+    # someone who already knows the folder structure — they have no
+    # contextual entry point. Rule: every page must be referenced from
+    # (a) its parent folder README's description slot, OR (b) an
+    # ancestor folder's README description slot, OR (c) some other
+    # content page's body/slots. Auto page-list doesn't count.
+    meaningful_inbound: dict[Path, list[str]] = {p.resolve(): [] for p in pages_list}
+
+    # Sources of outbound hrefs to consider: content pages (their full
+    # body) PLUS folder READMEs (only their slot content — not the
+    # auto-generated PAGES list, which is template chrome, not an
+    # intentional reference).
+    href_sources: list[tuple[Path, str]] = []
+    for p in pages_list:
+        try:
+            href_sources.append((p, p.read_text(encoding="utf-8")))
+        except OSError:
+            continue
+    for folder in _iter_folders(vault_root):
+        readme = folder / store.FOLDER_INDEX
+        if not readme.exists():
+            continue
+        try:
+            html = readme.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        slot_text = "\n".join(
+            slots.read_slot(html, sid) or "" for sid in slots.list_slots(html)
+        )
+        href_sources.append((readme, slot_text))
+
+    for src_path, scan_text in href_sources:
+        rel_src = str(src_path.relative_to(vault_root))
+        for href in _extract_hrefs(scan_text):
+            target = _resolve_href(src_path, href, vault_root)
+            if target is None:
+                continue
+            target = target.resolve()
+            if target == src_path.resolve():
+                continue  # self-link
+            if target in meaningful_inbound:
+                meaningful_inbound[target].append(rel_src)
+
+    buried: list[str] = []
+    for p in pages_list:
+        if not meaningful_inbound[p.resolve()]:
+            buried.append(str(p.relative_to(vault_root)))
+
     # ── Folder housekeeping ───────────────────────────────────────────
     crowded: list[tuple[str, int]] = []
     missing_description: list[str] = []
@@ -475,6 +526,7 @@ def lint(vault_root: Path, *, renderer: Renderer) -> str:
         f"Folders without description slot:   {len(missing_description)}",
         f"Folders with >{FOLDER_SPLIT_THRESHOLD} direct pages (split?):  {len(crowded)}",
         f"Empty folders:                      {len(empty_folders)}",
+        f"Buried pages (no inbound ref):      {len(buried)}",
         "",
     ]
 
@@ -500,6 +552,13 @@ def lint(vault_root: Path, *, renderer: Renderer) -> str:
     _section("Crowded folders (consider splitting)",
              [f"`{f}` — {n} direct pages" for f, n in crowded])
     _section("Empty folders", empty_folders)
+    _section(
+        "Buried pages — link them from an ancestor README description, "
+        "feature in a callout, OR move to where they're actually used. "
+        "Being auto-listed in the parent's PAGES section doesn't count: "
+        "the reader has to drill in blind to find them.",
+        buried,
+    )
 
     return "\n".join(out).rstrip()
 
