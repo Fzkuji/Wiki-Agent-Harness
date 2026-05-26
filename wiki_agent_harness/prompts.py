@@ -205,7 +205,11 @@ For each cluster of related items in the analysis:
 
   2. TIDY THE FOLDERS YOU JUST TOUCHED.
      - Empty folder ``description`` slot → write one short paragraph.
-     - More than ~7 direct pages → propose a split with ``mv``.
+     - **More than 10 direct pages = unstructured dumping. MUST split
+       into subfolders by theme (rebuild_folder_index renders a visible
+       warning in the README when this happens).** Use ``git mv``,
+       update cross-links, rebuild affected folder indexes.
+     - 7-10 direct pages → start thinking about subfolder splits.
      - Near-duplicates → merge then delete.
      - Stale pages superseded by new material → ``rm`` + clean hrefs.
 

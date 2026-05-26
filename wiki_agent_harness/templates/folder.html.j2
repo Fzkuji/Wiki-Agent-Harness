@@ -16,6 +16,16 @@
 {%- set folders = children | selectattr("kind", "equalto", "folder") | list %}
 {%- set pages   = children | selectattr("kind", "equalto", "page") | list %}
 
+{%- if crowded_warning %}
+<div class="alert alert-warning mb-8">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <div>
+    <div class="font-semibold text-sm mb-1">This folder is crowded — {{ direct_page_count }} direct pages.</div>
+    <div class="text-sm opacity-80">More than 10 files in one folder usually means the structure wasn't thought through. Split into subfolders by theme.</div>
+  </div>
+</div>
+{%- endif %}
+
 {%- if folders %}
 <section class="mb-10">
   <div class="flex items-center gap-3 mb-4">

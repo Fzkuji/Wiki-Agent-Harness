@@ -127,6 +127,8 @@ class Renderer:
         children: list[dict[str, Any]],
         *,
         depth: int = 0,
+        crowded_warning: bool = False,
+        direct_page_count: int = 0,
     ) -> str:
         """Render a folder's README.html from the ``folder`` template."""
         info = self.find_template("folder")
@@ -148,6 +150,8 @@ class Renderer:
             "asset_root": "../" * depth if depth else "./",
             "title": meta.get("title", "Index"),
             "children": children,
+            "crowded_warning": crowded_warning,
+            "direct_page_count": direct_page_count,
         }
         return tmpl.render(**ctx)
 

@@ -240,6 +240,13 @@ def rebuild_folder_index(
                 "updated": meta.get("updated") or "",
             })
 
+    # Surface a visible warning when the folder has too many direct content
+    # pages — a clear signal that it should be split into subfolders. The
+    # threshold (10) matches the human "more than 10 files = unstructured
+    # dumping" heuristic.
+    direct_page_count = sum(1 for c in children if c.get("kind") == "page")
+    crowded_warning = direct_page_count > 10
+
     readme = folder / store.FOLDER_INDEX
     folder_meta: dict[str, Any] = {}
     preserved_slots: dict[str, str] = {}
@@ -257,6 +264,8 @@ def rebuild_folder_index(
 
     html = renderer.render_folder_index(
         folder_meta, children, depth=depth_of(readme, vault_root),
+        crowded_warning=crowded_warning,
+        direct_page_count=direct_page_count,
     )
     for sid, content in preserved_slots.items():
         try:
