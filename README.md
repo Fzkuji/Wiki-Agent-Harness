@@ -51,15 +51,40 @@ This harness sits in between:
 
 ## Install
 
+> **This harness is an OpenProgram program — it runs *inside* OpenProgram.**
+> Install OpenProgram first, then add this harness to it.
+
 ```bash
-pip install -e .
-# or, from another project:
-pip install git+https://github.com/Fzkuji/Wiki-Agent-Harness.git
+# 1. Install the host (one step, all platforms)
+pip install openprogram
+
+# 2. Add this harness — clones it into OpenProgram's functions/agentics/
+#    and installs its deps (Jinja2 + PyYAML). Restart OpenProgram; it's
+#    auto-detected and `wiki_agent` becomes available.
+openprogram programs install wiki
 ```
 
-Installs:
-- Python package `wiki_agent_harness` with the `Wiki` class
-- CLI command `wah` (also reachable via `python -m wiki_agent_harness`)
+<details>
+<summary><b>Manual install / local development</b></summary>
+
+`programs install` just clones into OpenProgram's agentics folder and
+pip-installs the clone. By hand:
+
+```bash
+AGENTICS=$(python -c "import openprogram,os;print(os.path.join(os.path.dirname(openprogram.__file__),'functions','agentics'))")
+git clone https://github.com/Fzkuji/Wiki-Agent-Harness "$AGENTICS/Wiki-Agent-Harness"
+pip install "$AGENTICS/Wiki-Agent-Harness"   # Jinja2 + PyYAML
+```
+
+`openprogram` is the **host**, not a dependency — always present at
+runtime, so this repo's `pyproject.toml` doesn't pin it.
+
+</details>
+
+This installs the Python package `wiki_agent_harness` (the `Wiki` class)
+and the CLI command `wah` (also `python -m wiki_agent_harness`). The
+plain-Python wiki pieces work standalone; the `wiki_agent`
+`@agentic_function` itself needs the OpenProgram host.
 
 ## Quick start (Python)
 
