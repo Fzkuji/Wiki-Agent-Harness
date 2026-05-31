@@ -64,6 +64,13 @@ pip install openprogram
 openprogram programs install wiki
 ```
 
+Alternatively, install dependencies manually then install the package:
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
+
 <details>
 <summary><b>Manual install / local development</b></summary>
 
@@ -73,7 +80,9 @@ pip-installs the clone. By hand:
 ```bash
 AGENTICS=$(python -c "import openprogram,os;print(os.path.join(os.path.dirname(openprogram.__file__),'functions','agentics'))")
 git clone https://github.com/Fzkuji/Wiki-Agent-Harness "$AGENTICS/Wiki-Agent-Harness"
-pip install "$AGENTICS/Wiki-Agent-Harness"   # Jinja2 + PyYAML
+cd "$AGENTICS/Wiki-Agent-Harness"
+pip install -r requirements.txt
+pip install -e .
 ```
 
 `openprogram` is the **host**, not a dependency — always present at

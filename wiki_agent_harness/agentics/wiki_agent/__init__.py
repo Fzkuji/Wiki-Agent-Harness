@@ -77,7 +77,8 @@ def wiki_agent(
     )
 
     def _do_ingest() -> dict:
-        session_id = f"wiki-ingest-{abs(hash(task)) & 0xFFFFFF:06x}"
+        import hashlib
+        session_id = f"wiki-ingest-{hashlib.sha256(task.encode()).hexdigest()[:6]}"
         return w.ingest_session(
             session_id,
             [{"role": "user", "content": task}],

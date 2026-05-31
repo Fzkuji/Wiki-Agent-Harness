@@ -581,8 +581,11 @@ daisyUI examples, etc.) can be copy-pasted directly into a slot.
     let here = '', dirParts = parts;
     if (last.endsWith('.html')) { here = last.replace(/\.html$/, ''); dirParts = parts.slice(0, -1); }
     if (last === '' || last === 'README.html') here = '';
-    const trail = ['<a href="/" class="hover:text-brand-600">~</a>'];
-    let accum = '';
+    // Build breadcrumb relative to the vault root (asset_root), not the
+    // filesystem root — so links work under both file:// and http://.
+    const assetRoot = '{{ asset_root }}';
+    const trail = ['<a href="' + assetRoot + 'README.html" class="hover:text-brand-600">~</a>'];
+    let accum = assetRoot.replace(/\/$/, '');
     dirParts.forEach(p => {
       accum += '/' + encodeURIComponent(p);
       trail.push('<a href="' + accum + '/" class="hover:text-brand-600">' + p + '</a>');
