@@ -621,7 +621,10 @@ def git_commit(message: str, *, vault_root: Path) -> dict[str, Any]:
         if not status:
             return {"ok": True, "committed": False}
         subprocess.run(
-            ["git", "-C", str(vault_root), "commit", "-m", message,
+            ["git", "-C", str(vault_root),
+             "-c", "user.name=WikiAgentHarness",
+             "-c", "user.email=memory@wiki-agent.local",
+             "commit", "-m", message,
              "--author", "WikiAgentHarness <memory@wiki-agent.local>"],
             check=True, capture_output=True, timeout=15,
         )

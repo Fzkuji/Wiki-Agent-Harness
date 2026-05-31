@@ -207,7 +207,7 @@ def enrich_page(
 
     html = page_path.read_text(encoding="utf-8")
     meta = _slots.read_meta(html)
-    template = str(meta.get("title") or "") and str(meta.get("template") or "")
+    template = str(meta.get("template") or "")
     slot_ids = _slots.list_slots(html)
     if not slot_ids:
         return {"ok": True, "skipped": True, "reason": "no slots"}
