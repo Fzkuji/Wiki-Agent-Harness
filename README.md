@@ -55,14 +55,41 @@ This harness sits in between:
 > Install OpenProgram first, then add this harness to it.
 
 ```bash
-# 1. Install the host (one step, all platforms)
-pip install openprogram
+# 1. Install the OpenProgram host (one command)
+git clone https://github.com/Fzkuji/OpenProgram && cd OpenProgram
+./scripts/install.sh            # Windows: .\scripts\install.ps1
 
 # 2. Add this harness — clones it into OpenProgram's functions/agentics/
-#    and installs its deps (Jinja2 + PyYAML). Restart OpenProgram; it's
-#    auto-detected and `wiki_agent` becomes available.
+#    and installs its deps (Jinja2 + PyYAML). The first-run wizard also
+#    offers this. Restart OpenProgram; it's auto-detected and
+#    `wiki_agent` becomes available.
 openprogram programs install wiki
 ```
+
+<details>
+<summary><b>How OpenProgram detects this harness (and how to build your own)</b></summary>
+
+OpenProgram walks `openprogram/functions/agentics/` at startup and loads
+any cloned repo that satisfies the harness contract:
+
+```
+Wiki-Agent-Harness/                  ← cloned into functions/agentics/
+├── pyproject.toml                   ← declares THIS repo's own deps only (Jinja2, PyYAML)
+└── wiki_agent_harness/              ← importable package
+    ├── __init__.py                  ← kept dependency-light
+    └── agentics/
+        └── __init__.py              ← exposes AGENTIC_FUNCTIONS = [wiki_agent]
+```
+
+Importing `wiki_agent_harness.agentics` fires the `@agentic_function`
+decorators, which self-register the functions. Two rules keep this safe:
+the top-level `__init__` must import cleanly on a machine without the
+harness's optional deps, and `pyproject.toml` must NOT declare
+`openprogram` as a dependency (the host already provides it; declaring it
+re-installs the host from git). Full contract:
+[docs/installing-harnesses.md](https://github.com/Fzkuji/OpenProgram/blob/main/docs/installing-harnesses.md).
+
+</details>
 
 Alternatively, install dependencies manually then install the package:
 
